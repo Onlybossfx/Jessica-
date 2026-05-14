@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+  <div class="navbar">
+    <h2 style="color:#e91e63;">Admin Panel</h2>
+    <button class="nav-btn logout" onclick="logout()">Logout</button>
+  </div>
+  <div class="admin-section">
+    <h2>Upload New Media</h2>
+    <input type="text" id="title" placeholder="Title" required>
+    <select id="type"><option value="image">Image</option><option value="video">Video</option></select>
+    <input type="number" id="price" placeholder="Price (USD)" min="1" value="5">
+    <label>Original file (high-res)</label>
+    <input type="file" id="originalFile" accept="image/*,video/*" required>
+    <label>Preview file (watermarked/low-res)</label>
+    <input type="file" id="previewFile" accept="image/*,video/*" required>
+    <button class="btn-full" id="uploadBtn">Upload</button>
+    <p id="status" style="margin-top:1rem;"></p>
+  </div>
+
+  <script>
+    async function checkAdmin() {
+      await requireAuth();
+      const user = await getCurrentUser();
+      const { data } = await supabase.from('admin_users').select('user_id').eq('user_id', user.id).single();
+      if (!data) {
+        alert('Access denied');
+        window.location.href = 'gallery.html';
+      }
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+      const title = document.getElementById('title').value;
+      const type = document.getElementById('type').value;
+      const price = parseInt(document.getElementById('price').value);
+      const original = document.getElementById('originalFile').files[0];
+      const preview = document.getElementById('previewFile').files[0];
+      if (!title || !original || !preview) return alert('Fill all fields');
+
+      const status = document.getElementById('status');
+      status.textContent = 'Uploading…';
+
+      // Upload original to private bucket
+      const origPath = `${Date.now()}_original.${original.name.split('.').pop()}`;
+      const { error: origErr } = await supabase.storage.from('originals').upload(origPath, original);
+      if (origErr) { status.textContent = origErr.message; return; }
+
+      // Upload preview to public bucket
+      const prevPath = `${Date.now()}_preview.${preview.name.split('.').pop()}`;
+      const { error: prevErr } = await supabase.storage.from('previews').upload(prevPath, preview);
+      if (prevErr) { status.textContent = prevErr.message; return; }
+
+      // Get public URL for preview
+      const { data: { publicUrl } } = supabase.storage.from('previews').getPublicUrl(prevPath);
+
+      const { error: insertErr } = await supabase.from('media').insert({
+        title, type, price, original_path: origPath, preview_path: prevPath, preview_url: publicUrl
+      });
+      if (insertErr) {
+        status.textContent = insertErr.message;
+      } else {
+        status.textContent = 'Upload successful!';
+        document.getElementById('title').value = '';
+        document.getElementById('originalFile').value = '';
+        document.getElementById('previewFile').value = '';
+      }
+    });
+
+    checkAdmin();
+  </script>
+</body>
+</html>

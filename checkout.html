@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="https://checkout.flutterwave.com/v3.js"></script>
+</head>
+<body>
+  <div class="navbar">
+    <h2 style="color:#e91e63;">Checkout</h2>
+    <button class="nav-btn logout" onclick="logout()">Logout</button>
+  </div>
+  <div class="container">
+    <h2>Your Selection</h2>
+    <div id="itemsList"></div>
+    <div class="total">
+      Total: <span id="totalAmount">$0.00</span>
+      <span id="approx" class="approx" style="display:none;"></span>
+    </div>
+    <button class="btn-full" id="payBtn" disabled>Pay now</button>
+    <p id="status" style="text-align:center; margin-top:1rem;"></p>
+  </div>
+
+  <script>
+    const selected = JSON.parse(localStorage.getItem('selectedMedia') || '[]');
+    let totalUSD = 0;
+    let mediaItems = [];
+    let userCurrency = 'USD';
+    let userCountry = 'US';
+    let conversionRate = 1;
+
+    const countryToCurrency = {
+      NG: 'NGN', GH: 'GHS', KE: 'KES', ZA: 'ZAR', TZ: 'TZS',
+      UG: 'UGX', US: 'USD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
+      IT: 'EUR', ES: 'EUR', NL: 'EUR', BE: 'EUR', CA: 'CAD',
+      // add more as needed
+    };
+
+    async function detectLocation() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        userCountry = data.country || 'US';
+        userCurrency = countryToCurrency[data.country] || data.currency || 'USD';
+      } catch {
+        const region = (navigator.language || '').split('-')[1] || 'US';
+        userCountry = region;
+        userCurrency = countryToCurrency[region] || 'USD';
+      }
+    }
+
+    async function getExchangeRate(from = 'USD', to = 'USD') {
+      if (from === to) return 1;
+      try {
+        const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${from}`);
+        const data = await res.json();
+        return data.rates[to] || 1;
+      } catch { return 1; }
+    }
+
+    function formatCurrency(amount, currency) {
+      return new Intl.NumberFormat(navigator.language, {
+        style: 'currency', currency
+      }).format(amount);
+    }
+
+    async function loadCheckout() {
+      await requireAuth();
+      if (selected.length === 0) {
+        document.getElementById('itemsList').innerHTML = '<p>No items selected. <a href="gallery.html">Go back</a></p>';
+        return;
+      }
+
+      document.getElementById('status').textContent = 'Detecting location…';
+      await detectLocation();
+      conversionRate = await getExchangeRate('USD', userCurrency);
+      document.getElementById('status').textContent = '';
+
+      const { data, error } = await supabase.from('media').select('*').in('id', selected);
+      if (error) return alert(error.message);
+      mediaItems = data;
+
+      const list = document.getElementById('itemsList');
+      list.innerHTML = data.map(item => {
+        const priceLocal = item.price * conversionRate;
+        return `<div class="checkout-item">
+          <span>${item.title} (${item.type})</span>
+          <span>${formatCurrency(priceLocal, userCurrency)}</span>
+        </div>`;
+      }).join('');
+
+      totalUSD = data.reduce((s, item) => s + item.price, 0);
+      const totalLocal = totalUSD * conversionRate;
+      document.getElementById('totalAmount').textContent = formatCurrency(totalLocal, userCurrency);
+      if (userCurrency !== 'USD') {
+        document.getElementById('approx').style.display = 'inline';
+        document.getElementById('approx').textContent = `(~ ${formatCurrency(totalUSD, 'USD')})`;
+      }
+      document.getElementById('payBtn').disabled = false;
+    }
+
+    document.getElementById('payBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('payBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing…';
+
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
+        body: { media_ids: selected, amount: totalUSD }
+      });
+      if (orderError) {
+        alert(orderError.message);
+        btn.disabled = false;
+        btn.textContent = 'Pay with Flutterwave';
+        return;
+      }
+
+      const localTotal = totalUSD * conversionRate;
+      FlutterwaveCheckout({
+        public_key: 'YOUR_FLUTTERWAVE_PUBLIC_KEY',
+        tx_ref: orderData.tx_ref,
+        amount: localTotal,
+        currency: userCurrency,
+        payment_options: 'card',
+        customer: {
+          email: (await supabase.auth.getUser()).data.user?.email,
+        },
+        callback: async (response) => {
+          const { data: verify, error } = await supabase.functions.invoke('verify-payment', {
+            body: { tx_ref: orderData.tx_ref, transaction_id: response.transaction_id }
+          });
+          if (error || verify.status !== 'success') {
+            alert('Payment verification failed');
+            return;
+          }
+          window.location.href = `success.html?token=${verify.download_token}`;
+        },
+        onclose: () => {
+          btn.disabled = false;
+          btn.textContent = 'Pay with Flutterwave';
+        }
+      });
+    });
+
+    loadCheckout();
+  </script>
+</body>
+</html>

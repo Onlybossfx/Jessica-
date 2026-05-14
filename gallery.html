@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery – Alexandra's Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    /* ========== Mobile‑first base styles ========== */
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Facebook header */
+    .fb-header {
+      position: relative;
+    }
+    .cover-photo {
+      width: 100%;
+      height: 120px;               /* smaller on phones */
+      background-size: cover;
+      background-position: center;
+      border-bottom: 1px solid #333;
+    }
+    .profile-section {
+      position: relative;
+      height: 50px;
+      padding-left: 120px;         /* space for profile pic */
+    }
+    .profile-pic {
+      position: absolute;
+      left: 20px;
+      bottom: 5px;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid #1a1a1a;
+      background: #333;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .profile-name {
+      position: absolute;
+      left: 120px;
+      bottom: 10px;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: rgba(10,10,10,0.95);
+      border-bottom: 1px solid #222;
+    }
+    .nav-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .nav-btn.cart {
+      background: #e91e63;
+      color: white;
+      margin-right: 8px;
+    }
+    .nav-btn.logout {
+      background: #333;
+      color: #ddd;
+    }
+
+    /* Pinterest grid – single column by default (mobile) */
+    .gallery-pinterest {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 20px 15px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .pin-card {
+      background: #1e1e1e;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 3px solid transparent;
+      transition: transform 0.2s, border 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .pin-card:hover {
+      transform: scale(1.02);
+    }
+    .pin-card.selected {
+      border-color: #e91e63;
+    }
+    .pin-card img,
+    .pin-card video {
+      width: 100%;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      aspect-ratio: auto;        /* preserve original ratio */
+    }
+    .pin-info {
+      padding: 0.8rem;
+    }
+    .pin-info h4 {
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+    .price {
+      color: #e91e63;
+      font-weight: bold;
+    }
+    /* Overlay to block right‑click/drag */
+    .media-overlay {
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .desc{
+      margin: 0 20px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    /* ======= Nothing yet placeholder ======= */
+      .nothing-yet {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #777;
+        font-size: 1.2rem;
+        font-style: italic;
+        animation: fadeInUp 0.6s ease-out, pulseGlow 2.5s infinite ease-in-out;
+      }
+
+      /* Fade in from below */
+      @keyframes fadeInUp {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Subtle pulsing opacity */
+      @keyframes pulseGlow {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+      }
+
+    /* ========== Tablet: 2 columns ========== */
+    @media (min-width: 600px) {
+      .cover-photo {
+        height: 220px;
+      }
+      .profile-section {
+        height: 80px;
+        padding-left: 180px;
+      }
+      .profile-pic {
+        width: 120px;
+        height: 120px;
+        left: 25px;
+        bottom: 15px;
+      }
+      .profile-name {
+        left: 165px;
+        bottom: 40px;
+        font-size: 1.8rem;
+      }
+      .gallery-pinterest {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 30px 25px;
+        max-width: 700px;
+      }
+    }
+
+    /* ========== Small desktop / large tablet ========== */
+    @media (min-width: 900px) {
+      .cover-photo {
+        height: 280px;
+      }
+      .profile-section {
+        height: 90px;
+        padding-left: 220px;
+      }
+      .profile-pic {
+        width: 140px;
+        height: 140px;
+        left: 30px;
+        bottom: 20px;
+        border-width: 4px;
+      }
+      .profile-name {
+        left: 200px;
+        bottom: 50px;
+        font-size: 2rem;
+      }
+      .gallery-pinterest {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+      }
+    }
+
+    /* ========== Desktop: keep 2 columns but wider ========== */
+    @media (min-width: 1200px) {
+      .gallery-pinterest {
+        max-width: 1000px;
+      }
+      .cover-photo {
+        height: 320px;
+      }
+      .profile-pic {
+        width: 150px;
+        height: 150px;
+      }
+      .profile-name {
+        font-size: 2.2rem;
+        left: 210px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div></div>
+    <div>
+      <a href="checkout.html" class="nav-btn cart" id="cartBtn">Cart (0)</a>
+      <button class="nav-btn logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Facebook‑style header -->
+  <div class="fb-header">
+    <div class="cover-photo" style="background-image: url('cover.jpg');"></div>
+    <div class="profile-section">
+      <img class="profile-pic" src="profile.jpg" alt="Profile" draggable="false">
+      <h1 class="profile-name">Jessica</h1>
+    </div>
+  </div>
+
+  <!-- Gallery -->
+  <div class="gallery-pinterest" id="gallery"></div>
+
+  <script>
+    let selected = JSON.parse(localStorage.getItem('selectedMedia') || '[]');
+
+    function updateCartDisplay() {
+      const btn = document.getElementById('cartBtn');
+      btn.textContent = `Cart (${selected.length})`;
+      localStorage.setItem('selectedMedia', JSON.stringify(selected));
+    }
+
+    async function loadGallery() {
+      await requireAuth();
+      const { data, error } = await supabase.from('media').select('*');
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const gallery = document.getElementById('gallery');
+
+      // ----- Show placeholder if no media -----
+      if (!data || data.length === 0) {
+        gallery.innerHTML = `<div class="nothing-yet">Nothing yet…</div>`;
+        return;
+      }
+
+      // ----- Build cards -----
+      gallery.innerHTML = data.map(item => `
+        <div class="pin-card ${selected.includes(item.id) ? 'selected' : ''}" data-id="${item.id}">
+          <div class="media-overlay"></div>
+          ${item.type === 'image'
+            ? `<img src="${item.preview_url}" draggable="false" alt="${item.title}">`
+            : `<video src="${item.preview_url}" muted loop disablepictureinpicture oncontextmenu="return false;"></video>`}
+          <div class="pin-info">
+            <h4>${item.title}</h4>
+            <span class="price">$${item.price}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Select/deselect
+      gallery.querySelectorAll('.pin-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = parseInt(card.dataset.id);
+          if (selected.includes(id)) {
+            selected = selected.filter(s => s !== id);
+            card.classList.remove('selected');
+          } else {
+            selected.push(id);
+            card.classList.add('selected');
+          }
+          updateCartDisplay();
+        });
+      });
+    }
+
+    // Anti‑copy
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('keydown', e => {
+      if (e.key === 'PrintScreen' || (e.ctrlKey && (e.key === 's' || e.key === 'u'))) {
+        e.preventDefault();
+      }
+    });
+
+    updateCartDisplay();
+    loadGallery();
+  </script>
+</body>
+</html>

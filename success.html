@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Download</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Thank you! 🎉</h2>
+    <p>Your download is ready.</p>
+    <button class="btn-full" id="downloadZip">Download ZIP</button>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (!token) {
+      document.body.innerHTML = '<div class="container"><p>Invalid download link.</p></div>';
+    }
+
+    document.getElementById('downloadZip').addEventListener('click', async () => {
+      const btn = document.getElementById('downloadZip');
+      btn.disabled = true;
+      btn.textContent = 'Preparing ZIP…';
+
+      const { data, error } = await supabase.functions.invoke('get-download-urls', {
+        body: { download_token: token }
+      });
+      if (error || !data?.files) {
+        btn.textContent = 'Error';
+        alert(error?.message || 'Something went wrong');
+        return;
+      }
+
+      const zip = new JSZip();
+      const promises = data.files.map(file =>
+        fetch(file.url)
+          .then(res => res.blob())
+          .then(blob => zip.file(file.name, blob))
+      );
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, 'purchased_files.zip');
+      btn.textContent = 'Download Complete';
+    });
+
+    requireAuth();  // ensure session still active
+  </script>
+</body>
+</html>
