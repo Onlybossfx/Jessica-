@@ -2,12 +2,171 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
+  <style>
+    /* ========== Mobile‑first base ========== */
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: rgba(10,10,10,0.95);
+      border-bottom: 1px solid #222;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .navbar h2 {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+    .nav-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .nav-btn.logout {
+      background: #333;
+      color: #ddd;
+    }
+
+    /* Container */
+    .container {
+      width: 95%;
+      max-width: 650px;
+      margin: 24px auto;
+      padding: 1.5rem 1rem;
+      background: #1a1a1a;
+      border-radius: 20px;
+      border: 1px solid #333;
+      box-sizing: border-box;
+    }
+    .container h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Checkout items */
+    .checkout-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #333;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .checkout-item span:first-child {
+      font-size: 0.95rem;
+    }
+    .checkout-item span:last-child {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Total */
+    .total {
+      font-size: 1.3rem;
+      margin: 1.2rem 0;
+      text-align: right;
+      font-weight: 700;
+    }
+    .approx {
+      color: #888;
+      font-size: 0.85rem;
+      font-weight: 400;
+    }
+
+    /* Pay button */
+    .btn-full {
+      width: 100%;
+      padding: 0.9rem;
+      background: #e91e63;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-full:hover {
+      background: #ff3366;
+    }
+    .btn-full:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Status text */
+    #status {
+      text-align: center;
+      margin-top: 1rem;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    /* Empty cart message */
+    #itemsList p {
+      text-align: center;
+      color: #888;
+      padding: 2rem 0;
+    }
+    #itemsList p a {
+      color: #e91e63;
+      text-decoration: underline;
+    }
+
+    /* ========== Tablet & desktop ========== */
+    @media (min-width: 600px) {
+      .navbar {
+        padding: 14px 24px;
+      }
+      .navbar h2 {
+        font-size: 1.5rem;
+      }
+      .nav-btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1.2rem;
+      }
+      .container {
+        margin: 40px auto;
+        padding: 2rem 2rem;
+      }
+      .container h2 {
+        font-size: 1.8rem;
+      }
+      .checkout-item span:first-child {
+        font-size: 1rem;
+      }
+      .total {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (min-width: 900px) {
+      .container {
+        padding: 2.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
@@ -37,7 +196,6 @@
       NG: 'NGN', GH: 'GHS', KE: 'KES', ZA: 'ZAR', TZ: 'TZS',
       UG: 'UGX', US: 'USD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
       IT: 'EUR', ES: 'EUR', NL: 'EUR', BE: 'EUR', CA: 'CAD',
-      // add more as needed
     };
 
     async function detectLocation() {
