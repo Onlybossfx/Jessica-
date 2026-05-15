@@ -81,17 +81,17 @@
       color: #ddd;
     }
 
-    /* Pinterest grid – single column by default (mobile) */
+    /* ---------- MASONRY GALLERY (Pinterest style, responsive columns) ---------- */
     .gallery-pinterest {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      padding: 20px 15px;
-      max-width: 100%;
+      column-count: 2;                /* 2 columns on phones */
+      column-gap: 12px;
+      padding: 16px 12px;
       margin: 0 auto;
     }
 
     .pin-card {
+      break-inside: avoid;            /* prevents cards from splitting */
+      margin-bottom: 12px;
       background: #1e1e1e;
       border-radius: 16px;
       overflow: hidden;
@@ -113,7 +113,7 @@
       pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
-      aspect-ratio: auto;        /* preserve original ratio */
+      aspect-ratio: auto;             /* natural height for masonry */
     }
     .pin-info {
       padding: 0.8rem;
@@ -139,43 +139,34 @@
       font-size: 1rem;
       color: #F5DEF3;
     }
-  
     .infor{
-        margin: 10px  15px;
-        font-size: 1rem;
-        color: rgba(255,205,249,0.5);
-      }
+      margin: 10px 15px;
+      font-size: 1rem;
+      color: rgba(255,205,249,0.5);
+      font-style: italic
+    }
 
-    /* ======= Nothing yet placeholder ======= */
-      .nothing-yet {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 3rem 1rem;
-        color: #777;
-        font-size: 1.2rem;
-        font-style: italic;
-        animation: fadeInUp 0.6s ease-out, pulseGlow 2.5s infinite ease-in-out;
-      }
+    /* ======= Nothing yet placeholder (spans all columns) ======= */
+    .nothing-yet {
+      column-span: all;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #777;
+      font-size: 1.2rem;
+      font-style: italic;
+      animation: fadeInUp 0.6s ease-out, pulseGlow 2.5s infinite ease-in-out;
+    }
 
-      /* Fade in from below */
-      @keyframes fadeInUp {
-        0% {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        100% {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      /* Subtle pulsing opacity */
-      @keyframes pulseGlow {
-        0%, 100% { opacity: 0.6; }
-        50% { opacity: 1; }
-      }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
 
-    /* ========== Tablet: 2 columns ========== */
+    /* ========== Tablet: 3 columns ========== */
     @media (min-width: 600px) {
       .cover-photo {
         height: 220px;
@@ -196,13 +187,13 @@
         font-size: 1.8rem;
       }
       .gallery-pinterest {
-        grid-template-columns: repeat(2, 1fr);
-        padding: 30px 25px;
-        max-width: 700px;
+        column-count: 3;
+        column-gap: 16px;
+        padding: 24px 20px;
       }
     }
 
-    /* ========== Small desktop / large tablet ========== */
+    /* ========== Small desktop: 4 columns ========== */
     @media (min-width: 900px) {
       .cover-photo {
         height: 280px;
@@ -224,16 +215,14 @@
         font-size: 2rem;
       }
       .gallery-pinterest {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 800px;
+        column-count: 4;
+        column-gap: 18px;
+        padding: 30px 24px;
       }
     }
 
-    /* ========== Desktop: keep 2 columns but wider ========== */
+    /* ========== Large desktop: 5 columns ========== */
     @media (min-width: 1200px) {
-      .gallery-pinterest {
-        max-width: 1000px;
-      }
       .cover-photo {
         height: 320px;
       }
@@ -244,6 +233,10 @@
       .profile-name {
         font-size: 2.2rem;
         left: 210px;
+      }
+      .gallery-pinterest {
+        column-count: 5;
+        padding: 30px 32px;
       }
     }
   </style>
@@ -266,7 +259,7 @@
       <h1 class="profile-name">Jessica Lodge</h1>
     </div>
     <p class="desc">Natural EE's ✨, best tits you've seen today❤️.</p>
-  <p class="infor">Choose from a variety of specially picked photos and videos, made with love just for you.</p>
+    <p class="infor">Choose from a variety of specially picked photos and videos, made with love just for you.</p>
   </div>
 
   <!-- Gallery -->
