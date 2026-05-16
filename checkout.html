@@ -266,15 +266,29 @@
       btn.disabled = true;
       btn.textContent = 'Processing…';
 
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
-        body: { media_ids: selected, amount: totalUSD }
-      });
-      if (orderError) {
-        alert(orderError.message);
-        btn.disabled = false;
-        btn.textContent = 'Pay with Flutterwave';
-        return;
-      }
+      // Get the user's access token
+const session = await supabase.auth.getSession();
+const token = session.data.session.access_token;
+
+// Call the Edge Function directly with fetch
+const response = await fetch('https://your-project.supabase.co/functions/v1/create-order', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ media_ids: selected, amount: totalUSD })
+});
+
+if (!response.ok) {
+  const error = await response.json();
+  alert(error.error || 'Request failed');
+  btn.disabled = false;
+  btn.textContent = 'Pay now';
+  return;
+}
+
+const orderData = await response.json();
 
       const localTotal = totalUSD * conversionRate;
       FlutterwaveCheckout({
