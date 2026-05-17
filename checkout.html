@@ -10,7 +10,7 @@
   <script src="auth.js"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <style>
-    /* ... (Your existing styles are perfectly fine here) ... */
+    /* ... keep your existing styles ... */
     body {
       background: #0a0a0a;
       color: #fff;
@@ -18,89 +18,26 @@
       margin: 0;
       padding: 0;
     }
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: rgba(10,10,10,0.95);
-      border-bottom: 1px solid #222;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .navbar h2 { font-size: 1.3rem; margin: 0; }
-    .nav-btn {
-      padding: 0.4rem 1rem;
-      border-radius: 20px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-    .nav-btn.logout { background: #333; color: #ddd; }
-    .container {
-      width: 100%;
-      max-width: 650px;
-      margin: 24px auto;
-      padding: 1.5rem 1rem;
-      background: #1a1a1a;
-      border-radius: 20px;
+    .navbar { ... } /* your existing styles */
+    .container { ... }
+    /* --- Debug panel (visible on phone) --- */
+    #debugLog {
+      background: #111;
       border: 1px solid #333;
-      box-sizing: border-box;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px auto;
+      max-width: 600px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #0f0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      height: 150px;
+      overflow-y: auto;
     }
-    .container h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-    .checkout-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #333;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .checkout-item span:first-child { font-size: 0.95rem; }
-    .checkout-item span:last-child { font-weight: 600; white-space: nowrap; }
-    .total {
-      font-size: 1.3rem;
-      margin: 1.2rem 0;
-      text-align: right;
-      font-weight: 700;
-    }
-    .approx { color: #888; font-size: 0.85rem; font-weight: 400; }
-    .btn-full {
-      width: 100%;
-      padding: 0.9rem;
-      background: #e91e63;
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
-    }
-    .btn-full:hover { background: #ff3366; }
-    .btn-full:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status {
-      text-align: center;
-      margin-top: 1rem;
-      color: #aaa;
-      font-size: 0.9rem;
-    }
-    #itemsList p { text-align: center; color: #888; padding: 2rem 0; }
-    #itemsList p a { color: #e91e63; text-decoration: underline; }
-    @media (min-width: 600px) {
-      .navbar { padding: 14px 24px; }
-      .navbar h2 { font-size: 1.5rem; }
-      .nav-btn { font-size: 0.9rem; padding: 0.5rem 1.2rem; }
-      .container { margin: 40px auto; padding: 2rem 2rem; }
-      .container h2 { font-size: 1.8rem; }
-      .checkout-item span:first-child { font-size: 1rem; }
-      .total { font-size: 1.5rem; }
-    }
-    @media (min-width: 900px) {
-      .container { padding: 2.5rem; }
-    }
+    .btn-full { ... }
+    #status { ... }
   </style>
 </head>
 <body>
@@ -119,7 +56,18 @@
     <p id="status" style="text-align:center; margin-top:1rem;"></p>
   </div>
 
+  <!-- Debug log visible on the page -->
+  <div id="debugLog">[LOG] Waiting for interaction...</div>
+
   <script>
+    // Simple logger that also writes to the page
+    function log(msg) {
+      const el = document.getElementById('debugLog');
+      el.textContent += '\n' + new Date().toLocaleTimeString() + ' - ' + msg;
+      el.scrollTop = el.scrollHeight;
+      console.log(msg);
+    }
+
     const selected = JSON.parse(localStorage.getItem('selectedMedia') || '[]');
     let totalUSD = 0;
     let mediaItems = [];
@@ -143,9 +91,8 @@
         const region = (navigator.language || '').split('-')[1] || 'US';
         userCountry = region;
         userCurrency = countryToCurrency[region] || 'USD';
-      }
-    }
-
+      } } // same as before
+  
     async function getExchangeRate(from = 'USD', to = 'USD') {
       if (from === to) return 1;
       try {
@@ -154,13 +101,13 @@
         return data.rates[to] || 1;
       } catch { return 1; }
     }
-
-    function formatCurrency(amount, currency) {
+  
+  function formatCurrency(amount, currency) {
       return new Intl.NumberFormat(navigator.language, {
         style: 'currency', currency
       }).format(amount);
     }
-
+  
     function getPaymentOptions(countryCode, currencyCode) {
       let options = ['card']; // Card payments are accepted almost everywhere
       if (countryCode === 'NG' && currencyCode === 'NGN') {
@@ -180,6 +127,7 @@
 
     async function loadCheckout() {
       await requireAuth();
+      log('Checkout loading...');
       if (selected.length === 0) {
         document.getElementById('itemsList').innerHTML = '<p>No items selected. <a href="gallery.html">Go back</a></p>';
         return;
@@ -188,10 +136,14 @@
       document.getElementById('status').textContent = 'Detecting location…';
       await detectLocation();
       conversionRate = await getExchangeRate('USD', userCurrency);
+      log('User location: ' + userCountry + ', currency: ' + userCurrency + ', rate: ' + conversionRate);
       document.getElementById('status').textContent = '';
 
       const { data, error } = await supabase.from('media').select('*').in('id', selected);
-      if (error) return alert(error.message);
+      if (error) {
+        log('ERROR fetching media: ' + error.message);
+        return;
+      }
       mediaItems = data;
 
       const list = document.getElementById('itemsList');
@@ -211,86 +163,99 @@
         document.getElementById('approx').textContent = `(~ ${formatCurrency(totalUSD, 'USD')})`;
       }
       document.getElementById('payBtn').disabled = false;
+      log('Checkout ready. Pay button enabled.');
     }
 
     document.getElementById('payBtn').addEventListener('click', async () => {
       const btn = document.getElementById('payBtn');
       btn.disabled = true;
       btn.textContent = 'Processing…';
+      log('Pay button clicked. Calling create-order...');
 
-      // Get the user's access token
-      const session = await supabase.auth.getSession();
-      const token = session.data.session.access_token;
+      try {
+        const session = await supabase.auth.getSession();
+        const token = session.data.session.access_token;
+        if (!token) {
+          log('ERROR: No access token. You may need to log in again.');
+          btn.disabled = false;
+          btn.textContent = 'Pay now';
+          return;
+        }
 
-      // Call the Edge Function directly with fetch
-      const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ media_ids: selected, amount: totalUSD })
-      });
+        // IMPORTANT: Replace YOUR-PROJECT-ID with your Supabase project ID
+        const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ media_ids: selected, amount: totalUSD })
+        });
 
-      if (!response.ok) {
-  let errorText = 'Request failed';
-  try {
-    const errorData = await response.json();
-    errorText = errorData.error || errorData.message || JSON.stringify(errorData);
-  } catch (e) {}
-  alert('Edge Function error: ' + response.status + ' ' + errorText);
-  btn.disabled = false;
-  btn.textContent = 'Pay now';
-  return;
-}
-
-      const orderData = await response.json();
-      const localTotal = totalUSD * conversionRate;
-      const paymentOptions = getPaymentOptions(userCountry, userCurrency);
-
-      FlutterwaveCheckout({
-        public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X',
-        tx_ref: orderData.tx_ref,
-        amount: localTotal,
-        currency: userCurrency,
-        payment_options: paymentOptions,
-        customer: {
-          email: (await supabase.auth.getUser()).data.user?.email,
-        },
-        callback: async (response) => {
+        if (!response.ok) {
+          let errorText = 'Request failed';
           try {
-            const verifyRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-processor', {
-              method: 'POST',
-              headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                tx_ref: orderData.tx_ref,
-                transaction_id: response.transaction_id
-              })
-            });
+            const errorData = await response.json();
+            errorText = errorData.error || JSON.stringify(errorData);
+          } catch (e) {}
+          log('ERROR from create-order: ' + response.status + ' ' + errorText);
+          alert('Failed to create order: ' + errorText);
+          btn.disabled = false;
+          btn.textContent = 'Pay now';
+          return;
+        }
 
-            const verify = await verifyRes.json();
-            if (!verifyRes.ok || verify.status !== 'success') {
-              alert('Payment verification failed: ' + (verify.error || ''));
-              btn.disabled = false;
-              btn.textContent = 'Pay now';
-              return;
+        const orderData = await response.json();
+        log('Order created: ' + orderData.tx_ref);
+        const localTotal = totalUSD * conversionRate;
+        const paymentOptions = getPaymentOptions(userCountry, userCurrency);
+        log('Opening Flutterwave with currency=' + userCurrency + ' amount=' + localTotal + ' options=' + paymentOptions);
+
+        FlutterwaveCheckout({
+          public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X', // Replace with your live public key
+          tx_ref: orderData.tx_ref,
+          amount: localTotal,
+          currency: userCurrency,
+          payment_options: paymentOptions,
+          customer: {
+            email: (await supabase.auth.getUser()).data.user?.email,
+          },
+          callback: async (response) => {
+            log('Flutterwave callback received: ' + response.transaction_id);
+            try {
+              const verifyRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-processor', {
+                method: 'POST',
+                headers: {
+                  'Authorization': 'Bearer ' + token,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tx_ref: orderData.tx_ref, transaction_id: response.transaction_id })
+              });
+              const verify = await verifyRes.json();
+              if (!verifyRes.ok || verify.status !== 'success') {
+                log('Verification failed: ' + JSON.stringify(verify));
+                alert('Payment verification failed');
+                return;
+              }
+              log('Payment verified, redirecting to download...');
+              window.location.href = `success.html?token=${verify.download_token}`;
+            } catch (e) {
+              log('Verification error: ' + e.message);
+              alert('Verification error: ' + e.message);
             }
-
-            window.location.href = `success.html?token=${verify.download_token}`;
-          } catch (e) {
-            alert('Verification error: ' + e.message);
+          },
+          onclose: () => {
+            log('Flutterwave modal closed');
             btn.disabled = false;
             btn.textContent = 'Pay now';
           }
-        },
-        onclose: () => {
-          btn.disabled = false;
-          btn.textContent = 'Pay now';
-        }
-      });
+        });
+      } catch (e) {
+        log('UNEXPECTED ERROR: ' + e.message);
+        alert('Error: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = 'Pay now';
+      }
     });
 
     loadCheckout();
