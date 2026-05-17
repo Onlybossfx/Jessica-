@@ -103,14 +103,23 @@
       btn.disabled = true;
       btn.textContent = 'Preparing ZIP…';
 
-      const { data, error } = await supabase.functions.invoke('get-download-urls', {
-        body: { download_token: token }
-      });
-      if (error || !data?.files) {
-        btn.textContent = 'Error';
-        alert(error?.message || 'Something went wrong');
-        return;
-      }
+      const session = await supabase.auth.getSession();
+const authToken = session.data.session.access_token;
+const downloadRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/smooth-worker', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + authToken,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ download_token: token })
+});
+
+const data = await downloadRes.json();
+if (!downloadRes.ok || !data?.files) {
+  btn.textContent = 'Error';
+  alert(data?.error || 'Something went wrong');
+  return;
+}
 
       const zip = new JSZip();
       const promises = data.files.map(file =>
