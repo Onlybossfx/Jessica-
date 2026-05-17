@@ -181,9 +181,6 @@
           btn.textContent = 'Pay now';
           return;
         }
-
-        // DEBUG: show the URL we're about to call
-document.getElementById('debugLog').textContent += '\nFETCH URL: https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/create-order';
         
         // IMPORTANT: Replace YOUR-PROJECT-ID with your Supabase project ID
         const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
