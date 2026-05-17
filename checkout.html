@@ -271,7 +271,7 @@ const session = await supabase.auth.getSession();
 const token = session.data.session.access_token;
 
 // Call the Edge Function directly with fetch
-const response = await fetch('https://your-project.supabase.co/functions/v1/create-order', {
+const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer ' + token,
@@ -292,7 +292,7 @@ const orderData = await response.json();
 
       const localTotal = totalUSD * conversionRate;
       FlutterwaveCheckout({
-        public_key: 'FLWPUBK_TEST-8a966986b6586ee1781803abbb3d30e9-X',
+        public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X',
         tx_ref: orderData.tx_ref,
         amount: localTotal,
         currency: userCurrency,
@@ -301,15 +301,36 @@ const orderData = await response.json();
           email: (await supabase.auth.getUser()).data.user?.email,
         },
         callback: async (response) => {
-          const { data: verify, error } = await supabase.functions.invoke('verify-payment', {
-            body: { tx_ref: orderData.tx_ref, transaction_id: response.transaction_id }
-          });
-          if (error || verify.status !== 'success') {
-            alert('Payment verification failed');
-            return;
-          }
-          window.location.href = `success.html?token=${verify.download_token}`;
-        },
+  try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session.access_token;
+    const verifyRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-processor', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        tx_ref: orderData.tx_ref,
+        transaction_id: response.transaction_id
+      })
+    });
+
+    const verify = await verifyRes.json();
+    if (!verifyRes.ok || verify.status !== 'success') {
+      alert('Payment verification failed: ' + (verify.error || ''));
+      btn.disabled = false;
+      btn.textContent = 'Pay now';
+      return;
+    }
+
+    window.location.href = `success.html?token=${verify.download_token}`;
+  } catch (e) {
+    alert('Verification error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Pay now';
+  }
+},
         onclose: () => {
           btn.disabled = false;
           btn.textContent = 'Pay with Flutterwave';
