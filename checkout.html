@@ -10,7 +10,7 @@
   <script src="auth.js"></script>
   <script src="https://checkout.flutterwave.com/v3.js"></script>
   <style>
-    /* ========== Mobile‑first base ========== */
+    /* ... (Your existing styles are perfectly fine here) ... */
     body {
       background: #0a0a0a;
       color: #fff;
@@ -18,22 +18,17 @@
       margin: 0;
       padding: 0;
     }
-
-    /* Navbar */
     .navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 14px;
+      padding: 12px 16px;
       background: rgba(10,10,10,0.95);
       border-bottom: 1px solid #222;
       flex-wrap: wrap;
       gap: 8px;
     }
-    .navbar h2 {
-      font-size: 1.3rem;
-      margin: 0;
-    }
+    .navbar h2 { font-size: 1.3rem; margin: 0; }
     .nav-btn {
       padding: 0.4rem 1rem;
       border-radius: 20px;
@@ -42,14 +37,9 @@
       cursor: pointer;
       font-size: 0.85rem;
     }
-    .nav-btn.logout {
-      background: #333;
-      color: #ddd;
-    }
-
-    /* Container */
+    .nav-btn.logout { background: #333; color: #ddd; }
     .container {
-      width: 95%;
+      width: 100%;
       max-width: 650px;
       margin: 24px auto;
       padding: 1.5rem 1rem;
@@ -58,12 +48,7 @@
       border: 1px solid #333;
       box-sizing: border-box;
     }
-    .container h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    /* Checkout items */
+    .container h2 { font-size: 1.5rem; margin-bottom: 1rem; }
     .checkout-item {
       display: flex;
       justify-content: space-between;
@@ -73,28 +58,15 @@
       flex-wrap: wrap;
       gap: 6px;
     }
-    .checkout-item span:first-child {
-      font-size: 0.95rem;
-    }
-    .checkout-item span:last-child {
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    /* Total */
+    .checkout-item span:first-child { font-size: 0.95rem; }
+    .checkout-item span:last-child { font-weight: 600; white-space: nowrap; }
     .total {
       font-size: 1.3rem;
       margin: 1.2rem 0;
       text-align: right;
       font-weight: 700;
     }
-    .approx {
-      color: #888;
-      font-size: 0.85rem;
-      font-weight: 400;
-    }
-
-    /* Pay button */
+    .approx { color: #888; font-size: 0.85rem; font-weight: 400; }
     .btn-full {
       width: 100%;
       padding: 0.9rem;
@@ -107,64 +79,27 @@
       cursor: pointer;
       transition: background 0.2s, opacity 0.2s;
     }
-    .btn-full:hover {
-      background: #ff3366;
-    }
-    .btn-full:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Status text */
+    .btn-full:hover { background: #ff3366; }
+    .btn-full:disabled { opacity: 0.5; cursor: not-allowed; }
     #status {
       text-align: center;
       margin-top: 1rem;
       color: #aaa;
       font-size: 0.9rem;
     }
-
-    /* Empty cart message */
-    #itemsList p {
-      text-align: center;
-      color: #888;
-      padding: 2rem 0;
-    }
-    #itemsList p a {
-      color: #e91e63;
-      text-decoration: underline;
-    }
-
-    /* ========== Tablet & desktop ========== */
+    #itemsList p { text-align: center; color: #888; padding: 2rem 0; }
+    #itemsList p a { color: #e91e63; text-decoration: underline; }
     @media (min-width: 600px) {
-      .navbar {
-        padding: 14px 24px;
-      }
-      .navbar h2 {
-        font-size: 1.5rem;
-      }
-      .nav-btn {
-        font-size: 0.9rem;
-        padding: 0.5rem 1.2rem;
-      }
-      .container {
-        margin: 40px auto;
-        padding: 2rem 2rem;
-      }
-      .container h2 {
-        font-size: 1.8rem;
-      }
-      .checkout-item span:first-child {
-        font-size: 1rem;
-      }
-      .total {
-        font-size: 1.5rem;
-      }
+      .navbar { padding: 14px 24px; }
+      .navbar h2 { font-size: 1.5rem; }
+      .nav-btn { font-size: 0.9rem; padding: 0.5rem 1.2rem; }
+      .container { margin: 40px auto; padding: 2rem 2rem; }
+      .container h2 { font-size: 1.8rem; }
+      .checkout-item span:first-child { font-size: 1rem; }
+      .total { font-size: 1.5rem; }
     }
-
     @media (min-width: 900px) {
-      .container {
-        padding: 2.5rem;
-      }
+      .container { padding: 2.5rem; }
     }
   </style>
 </head>
@@ -226,6 +161,23 @@
       }).format(amount);
     }
 
+    function getPaymentOptions(countryCode, currencyCode) {
+      let options = ['card']; // Card payments are accepted almost everywhere
+      if (countryCode === 'NG' && currencyCode === 'NGN') {
+        options.push('banktransfer', 'ussd', 'account', 'qr');
+      } else if (countryCode === 'KE' && currencyCode === 'KES') {
+        options.push('mpesa');
+      } else if (countryCode === 'GH' && currencyCode === 'GHS') {
+        options.push('mobilemoneyghana');
+      } else if (['TZ', 'UG', 'RW', 'ZM'].includes(countryCode)) {
+        options.push('mobilemoney' + countryCode.toLowerCase());
+      } else {
+        // For the US, UK, EU and others, bank transfer is also an option
+        options.push('banktransfer');
+      }
+      return options.join(', ');
+    }
+
     async function loadCheckout() {
       await requireAuth();
       if (selected.length === 0) {
@@ -267,73 +219,76 @@
       btn.textContent = 'Processing…';
 
       // Get the user's access token
-const session = await supabase.auth.getSession();
-const token = session.data.session.access_token;
+      const session = await supabase.auth.getSession();
+      const token = session.data.session.access_token;
 
-// Call the Edge Function directly with fetch
-const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ' + token,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ media_ids: selected, amount: totalUSD })
-});
+      // Call the Edge Function directly with fetch
+      const response = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-task', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ media_ids: selected, amount: totalUSD })
+      });
 
-if (!response.ok) {
-  const error = await response.json();
-  alert(error.error || 'Request failed');
+      if (!response.ok) {
+  let errorText = 'Request failed';
+  try {
+    const errorData = await response.json();
+    errorText = errorData.error || errorData.message || JSON.stringify(errorData);
+  } catch (e) {}
+  alert('Edge Function error: ' + response.status + ' ' + errorText);
   btn.disabled = false;
   btn.textContent = 'Pay now';
   return;
 }
 
-const orderData = await response.json();
-
+      const orderData = await response.json();
       const localTotal = totalUSD * conversionRate;
+      const paymentOptions = getPaymentOptions(userCountry, userCurrency);
+
       FlutterwaveCheckout({
         public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X',
         tx_ref: orderData.tx_ref,
         amount: localTotal,
         currency: userCurrency,
-        payment_options: 'card',
+        payment_options: paymentOptions,
         customer: {
           email: (await supabase.auth.getUser()).data.user?.email,
         },
         callback: async (response) => {
-  try {
-    const session = await supabase.auth.getSession();
-    const token = session.data.session.access_token;
-    const verifyRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-processor', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        tx_ref: orderData.tx_ref,
-        transaction_id: response.transaction_id
-      })
-    });
+          try {
+            const verifyRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/super-processor', {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                tx_ref: orderData.tx_ref,
+                transaction_id: response.transaction_id
+              })
+            });
 
-    const verify = await verifyRes.json();
-    if (!verifyRes.ok || verify.status !== 'success') {
-      alert('Payment verification failed: ' + (verify.error || ''));
-      btn.disabled = false;
-      btn.textContent = 'Pay now';
-      return;
-    }
+            const verify = await verifyRes.json();
+            if (!verifyRes.ok || verify.status !== 'success') {
+              alert('Payment verification failed: ' + (verify.error || ''));
+              btn.disabled = false;
+              btn.textContent = 'Pay now';
+              return;
+            }
 
-    window.location.href = `success.html?token=${verify.download_token}`;
-  } catch (e) {
-    alert('Verification error: ' + e.message);
-    btn.disabled = false;
-    btn.textContent = 'Pay now';
-  }
-},
+            window.location.href = `success.html?token=${verify.download_token}`;
+          } catch (e) {
+            alert('Verification error: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = 'Pay now';
+          }
+        },
         onclose: () => {
           btn.disabled = false;
-          btn.textContent = 'Pay with Flutterwave';
+          btn.textContent = 'Pay now';
         }
       });
     });
