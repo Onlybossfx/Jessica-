@@ -277,7 +277,7 @@
         </div>
       `).join('');
 
-      // Attach delete handlers
+      // Attach delete handlers with detailed logging
       container.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.dataset.id;
@@ -286,25 +286,46 @@
           if (!confirm('Delete this media permanently?')) return;
           btn.disabled = true;
           btn.textContent = 'Deleting…';
-          try {
-            // Delete from storage (originals bucket is private, previews public)
-            await supabase.storage.from('originals').remove([orig]);
-            await supabase.storage.from('previews').remove([prev]);
-            // Delete from database
-            const { error: dbError } = await supabase.from('media').delete().eq('id', id);
-            if (dbError) throw dbError;
-            // Refresh list
-            loadMedia();
-          } catch (e) {
-            alert('Delete failed: ' + e.message);
+          console.log('Deleting media:', { id, orig, prev });
+
+          // Step 1: Delete original from private bucket
+          const { error: origErr } = await supabase.storage.from('originals').remove([orig]);
+          if (origErr) {
+            console.error('Failed to delete original:', origErr);
+            alert('Failed to delete original file: ' + origErr.message);
             btn.disabled = false;
             btn.textContent = 'Delete';
+            return;
           }
+          console.log('Original file deleted successfully.');
+
+          // Step 2: Delete preview from public bucket
+          const { error: prevErr } = await supabase.storage.from('previews').remove([prev]);
+          if (prevErr) {
+            console.error('Failed to delete preview:', prevErr);
+            alert('Failed to delete preview file: ' + prevErr.message);
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+            return;
+          }
+          console.log('Preview file deleted successfully.');
+
+          // Step 3: Delete database record
+          const { error: dbError } = await supabase.from('media').delete().eq('id', id);
+          if (dbError) {
+            console.error('Failed to delete media record:', dbError);
+            alert('Failed to delete media record: ' + dbError.message);
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+            return;
+          }
+          console.log('Media record deleted successfully.');
+          loadMedia();
         });
       });
     }
 
-    // Upload handler
+    // Upload handler (unchanged but with logging)
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const title = document.getElementById('title').value;
       const type = document.getElementById('type').value;
@@ -318,10 +339,12 @@
 
       try {
         const origPath = `${Date.now()}_original.${original.name.split('.').pop()}`;
+        console.log('Uploading original:', origPath);
         const { error: origErr } = await supabase.storage.from('originals').upload(origPath, original);
         if (origErr) throw origErr;
 
         const prevPath = `${Date.now()}_preview.${preview.name.split('.').pop()}`;
+        console.log('Uploading preview:', prevPath);
         const { error: prevErr } = await supabase.storage.from('previews').upload(prevPath, preview);
         if (prevErr) throw prevErr;
 
@@ -338,6 +361,7 @@
         document.getElementById('previewFile').value = '';
         loadMedia();
       } catch (e) {
+        console.error('Upload error:', e);
         status.textContent = 'Error: ' + e.message;
       }
     });
