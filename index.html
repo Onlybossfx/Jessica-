@@ -5,15 +5,367 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exclusive Gallery</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hero */
+    .landing {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url('jessica.jpg') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .landing .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+    }
+    .landing .content {
+      position: relative;
+      text-align: center;
+      z-index: 1;
+      animation: fadeUp 1.2s ease-out;
+    }
+    @keyframes fadeUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .landing h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-shadow: 0 0 30px rgba(0,0,0,0.8);
+      margin-bottom: 1rem;
+    }
+    .landing p {
+      font-size: 1.2rem;
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+    .btn-primary {
+      display: inline-block;
+      padding: 1rem 3rem;
+      background: linear-gradient(45deg, #ff3366, #e91e63);
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 8px 25px rgba(233,30,99,0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(233,30,99,0.6);
+    }
+
+    /* Sections */
+    .section {
+      padding: 4rem 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .section h2 {
+      color: #e91e63;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .about-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: center;
+    }
+    .about-text {
+      flex: 1 1 300px;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #ddd;
+    }
+    .about-image {
+      flex: 1 1 250px;
+    }
+    .about-image img {
+      width: 100%;
+      border-radius: 20px;
+      border: 2px solid #333;
+    }
+    .contact-form {
+      display: grid;
+      gap: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .contact-form input,
+    .contact-form textarea {
+      padding: 0.9rem;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .contact-form textarea { height: 120px; resize: vertical; }
+    .contact-form button {
+      background: #e91e63;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* Support floating button */
+    .support-float-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+    .support-float-btn:hover { transform: scale(1.1); }
+
+    .support-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay.active { display: flex; }
+    .support-modal {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .support-modal h3 {
+      margin-top: 0;
+      color: #e91e63;
+    }
+    .support-modal input,
+    .support-modal textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .support-modal textarea { height: 100px; resize: vertical; }
+    .support-modal button {
+      background: #e91e63;
+      border: none;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .support-modal button:disabled { opacity: 0.5; }
+    .support-modal .close-btn {
+      background: transparent;
+      border: none;
+      color: #aaa;
+      font-size: 1.5rem;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+    }
+
+    .fa-brands{
+      width: 60px;
+      font-size: 30px;
+    }
+  
+  #links a{
+    text-decoration: none;
+    color: #fff;
+  }
+  
+    @media (max-width: 600px) {
+      .section { padding: 2rem 1rem; }
+      .about-content { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
+  <!-- Hero -->
   <div class="landing">
     <div class="overlay"></div>
     <div class="content">
-      <h1>Jessica Lodge fans</h1>
-      <p>Welcome to my private fan page</p>
-      <a href="login.html" class="btn-primary">View my collection</a>
+      <h1>Jessica Lodge Only fans</h1>
+      <p>Satisfy your desires with kinky photos and videos from my fan page</p>
+      <a href="login.html" class="btn-primary">Enter Gallery</a>
     </div>
   </div>
+
+  <!-- About -->
+  <section class="section" id="about">
+    <h2>Jessica Lodge</h2>
+    <div class="about-content">
+      <div class="about-text">
+        <center>
+        <p>Im Jessica. Just your naughty neighbour doing sone kinky and fun stuff. Unlock tons of naughty videos and photos to make your day. </p>
+        <p>Browse my catalog and lets have fun together <br>PS: I see you're already horny.</p>
+        </center>
+        </div>
+      <div class="about-image">
+        <img src="profile.jpg" alt="Jessica" draggable="false">
+      </div>
+    </div>
+  </section>
+  
+  <!--links-->
+  <center>
+  <section class="section" id="links">
+    <h2>Visit my socials</h2>
+  <a href="#"><i class="fa-brands fa-instagram"></i></a>
+  <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+  <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+  </section>
+  </center>
+    
+  <!-- Contact -->
+  <section class="section" id="contact">
+    <h2>Get in Touch</h2>
+    <form class="contact-form" id="contactForm">
+      <input type="email" id="contactEmail" placeholder="Your email" required>
+      <input type="text" id="contactSubject" placeholder="Subject">
+      <textarea id="contactMessage" placeholder="Your message" required></textarea>
+      <button type="submit">Send Message</button>
+      <p id="contactStatus" style="text-align:center;"></p>
+    </form>
+  </section>
+
+  <!-- Support Floating Button & Modal -->
+  <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
+  <div class="support-modal-overlay" id="supportOverlay">
+    <div class="support-modal">
+      <button class="close-btn" id="closeSupportBtn">&times;</button>
+      <h3>Contact Support</h3>
+      <input type="text" id="supportSubject" placeholder="Subject (optional)">
+      <textarea id="supportMessage" placeholder="How can we help you?"></textarea>
+      <button id="sendSupportBtn">Send Message</button>
+      <p id="supportStatus" style="text-align:center; margin-top:0.5rem;"></p>
+    </div>
+  </div>
+
+  <script>
+    // Contact form (uses public-message Edge Function)
+    document.getElementById('contactForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('contactEmail').value;
+      const subject = document.getElementById('contactSubject').value;
+      const message = document.getElementById('contactMessage').value;
+      const status = document.getElementById('contactStatus');
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/public-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, subject, message })
+        });
+        if (!res.ok) throw new Error('Failed');
+        status.textContent = '✅ Message sent!';
+        document.getElementById('contactForm').reset();
+      } catch (err) {
+        status.textContent = '❌ Error sending message. Please try again later.';
+      }
+    });
+
+    // Support modal
+    const floatBtn = document.getElementById('supportFloatBtn');
+    const overlay = document.getElementById('supportOverlay');
+    const closeBtn = document.getElementById('closeSupportBtn');
+    const sendBtn = document.getElementById('sendSupportBtn');
+    const subjectInput = document.getElementById('supportSubject');
+    const messageInput = document.getElementById('supportMessage');
+    const supportStatus = document.getElementById('supportStatus');
+
+    floatBtn.addEventListener('click', () => overlay.classList.add('active'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+    sendBtn.addEventListener('click', async () => {
+      const msg = messageInput.value.trim();
+      if (!msg) return alert('Please enter a message.');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+      supportStatus.textContent = '';
+      try {
+        const session = await supabase.auth.getSession();
+        if (!session.data.session) {
+          alert('You must be logged in to send a support message. Please log in.');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Message';
+          return;
+        }
+        const token = session.data.session.access_token;
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
+        });
+        if (!res.ok) throw new Error('Failed');
+        supportStatus.textContent = '✅ Message sent!';
+        subjectInput.value = '';
+        messageInput.value = '';
+        setTimeout(() => overlay.classList.remove('active'), 2000);
+      } catch (e) {
+        supportStatus.textContent = '❌ Error: ' + e.message;
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Message';
+      }
+    });
+  </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gallery – Alexandra's Portfolio</title>
+  <title>Gallery – Jessica's Portfolio</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
@@ -22,7 +22,7 @@
     }
     .cover-photo {
       width: 100%;
-      height: 120px;               /* smaller on phones */
+      height: 120px;
       background-size: cover;
       background-position: center;
       border-bottom: 1px solid #333;
@@ -30,7 +30,7 @@
     .profile-section {
       position: relative;
       height: 50px;
-      padding-left: 120px;         /* space for profile pic */
+      padding-left: 120px;
     }
     .profile-pic {
       position: absolute;
@@ -80,17 +80,23 @@
       background: #333;
       color: #ddd;
     }
+    .nav-btn.dashboard-link {
+      background: transparent;
+      color: #aaa;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
 
-    /* ---------- MASONRY GALLERY (Pinterest style, responsive columns) ---------- */
+    /* ---------- MASONRY GALLERY ---------- */
     .gallery-pinterest {
-      column-count: 2;                /* 2 columns on phones */
+      column-count: 2;
       column-gap: 12px;
       padding: 16px 12px;
       margin: 0 auto;
     }
 
     .pin-card {
-      break-inside: avoid;            /* prevents cards from splitting */
+      break-inside: avoid;
       margin-bottom: 12px;
       background: #1e1e1e;
       border-radius: 16px;
@@ -113,7 +119,6 @@
       pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
-      aspect-ratio: auto;             /* natural height for masonry */
     }
     .pin-info {
       padding: 0.8rem;
@@ -126,7 +131,6 @@
       color: #e91e63;
       font-weight: bold;
     }
-    /* Overlay to block right‑click/drag */
     .media-overlay {
       position: absolute;
       inset: 0;
@@ -134,19 +138,17 @@
       z-index: 2;
     }
 
-    .desc{
+    .desc {
       margin: 0 15px;
       font-size: 1rem;
       color: #F5DEF3;
     }
-    .infor{
+    .infor {
       margin: 10px 15px;
       font-size: 1rem;
       color: rgba(255,205,249,0.5);
-      font-style: italic
     }
 
-    /* ======= Nothing yet placeholder (spans all columns) ======= */
     .nothing-yet {
       column-span: all;
       text-align: center;
@@ -156,7 +158,6 @@
       font-style: italic;
       animation: fadeInUp 0.6s ease-out, pulseGlow 2.5s infinite ease-in-out;
     }
-
     @keyframes fadeInUp {
       0% { opacity: 0; transform: translateY(20px); }
       100% { opacity: 1; transform: translateY(0); }
@@ -166,85 +167,111 @@
       50% { opacity: 1; }
     }
 
-    /* ========== Tablet: 3 columns ========== */
+    /* Support floating button */
+    .support-float-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay.active { display: flex; }
+    .support-modal {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+    .support-modal h3 { color: #e91e63; margin-top: 0; }
+    .support-modal input,
+    .support-modal textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .support-modal textarea { height: 100px; resize: vertical; }
+    .support-modal button {
+      background: #e91e63;
+      border: none;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .support-modal button:disabled { opacity: 0.5; }
+    .support-modal .close-btn {
+      background: transparent;
+      border: none;
+      color: #aaa;
+      font-size: 1.5rem;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+    }
+
+    /* Responsive columns */
     @media (min-width: 600px) {
-      .cover-photo {
-        height: 220px;
-      }
-      .profile-section {
-        height: 80px;
-        padding-left: 180px;
-      }
-      .profile-pic {
-        width: 120px;
-        height: 120px;
-        left: 25px;
-        bottom: 15px;
-      }
-      .profile-name {
-        left: 165px;
-        bottom: 40px;
-        font-size: 1.8rem;
-      }
-      .gallery-pinterest {
-        column-count: 3;
-        column-gap: 16px;
-        padding: 24px 20px;
-      }
+      .cover-photo { height: 220px; }
+      .profile-section { height: 80px; padding-left: 180px; }
+      .profile-pic { width: 120px; height: 120px; left: 25px; bottom: 15px; }
+      .profile-name { left: 165px; bottom: 40px; font-size: 1.8rem; }
+      .gallery-pinterest { column-count: 3; column-gap: 16px; padding: 24px 20px; }
     }
-
-    /* ========== Small desktop: 4 columns ========== */
     @media (min-width: 900px) {
-      .cover-photo {
-        height: 280px;
-      }
-      .profile-section {
-        height: 90px;
-        padding-left: 220px;
-      }
-      .profile-pic {
-        width: 140px;
-        height: 140px;
-        left: 30px;
-        bottom: 20px;
-        border-width: 4px;
-      }
-      .profile-name {
-        left: 200px;
-        bottom: 50px;
-        font-size: 2rem;
-      }
-      .gallery-pinterest {
-        column-count: 4;
-        column-gap: 18px;
-        padding: 30px 24px;
-      }
+      .cover-photo { height: 280px; }
+      .profile-section { height: 90px; padding-left: 220px; }
+      .profile-pic { width: 140px; height: 140px; left: 30px; bottom: 20px; border-width: 4px; }
+      .profile-name { left: 200px; bottom: 50px; font-size: 2rem; }
+      .gallery-pinterest { column-count: 4; column-gap: 18px; padding: 30px 24px; }
     }
-
-    /* ========== Large desktop: 5 columns ========== */
     @media (min-width: 1200px) {
-      .cover-photo {
-        height: 320px;
-      }
-      .profile-pic {
-        width: 150px;
-        height: 150px;
-      }
-      .profile-name {
-        font-size: 2.2rem;
-        left: 210px;
-      }
-      .gallery-pinterest {
-        column-count: 5;
-        padding: 30px 32px;
-      }
+      .cover-photo { height: 320px; }
+      .profile-pic { width: 150px; height: 150px; }
+      .profile-name { font-size: 2.2rem; left: 210px; }
+      .gallery-pinterest { column-count: 5; padding: 30px 32px; }
     }
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <div class="navbar">
-    <div></div>
+    <div>
+      <a href="dashboard.html" class="nav-btn dashboard-link">← Dashboard</a>
+    </div>
     <div>
       <a href="checkout.html" class="nav-btn cart" id="cartBtn">Cart (0)</a>
       <button class="nav-btn logout" onclick="logout()">Logout</button>
@@ -256,14 +283,27 @@
     <div class="cover-photo" style="background-image: url('cover.jpg');"></div>
     <div class="profile-section">
       <img class="profile-pic" src="profile.jpg" alt="Profile" draggable="false">
-      <h1 class="profile-name">Jessica Lodge</h1>
+      <h1 class="profile-name">Jessica</h1>
     </div>
-    <p class="desc">Natural EE's ✨, best tits you've seen today❤️.</p>
+    <p class="desc">Natural EE's ✨, best picks you've seen today❤️.</p>
     <p class="infor">Choose from a variety of specially picked photos and videos, made with love just for you.</p>
   </div>
 
   <!-- Gallery -->
   <div class="gallery-pinterest" id="gallery"></div>
+
+  <!-- Support Floating Button & Modal -->
+  <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
+  <div class="support-modal-overlay" id="supportOverlay">
+    <div class="support-modal">
+      <button class="close-btn" id="closeSupportBtn">&times;</button>
+      <h3>Contact Support</h3>
+      <input type="text" id="supportSubject" placeholder="Subject (optional)">
+      <textarea id="supportMessage" placeholder="How can we help you?"></textarea>
+      <button id="sendSupportBtn">Send Message</button>
+      <p id="supportStatus" style="text-align:center; margin-top:0.5rem;"></p>
+    </div>
+  </div>
 
   <script>
     let selected = JSON.parse(localStorage.getItem('selectedMedia') || '[]');
@@ -281,16 +321,11 @@
         console.error(error);
         return;
       }
-
       const gallery = document.getElementById('gallery');
-
-      // ----- Show placeholder if no media -----
       if (!data || data.length === 0) {
         gallery.innerHTML = `<div class="nothing-yet">Nothing yet…</div>`;
         return;
       }
-
-      // ----- Build cards -----
       gallery.innerHTML = data.map(item => `
         <div class="pin-card ${selected.includes(item.id) ? 'selected' : ''}" data-id="${item.id}">
           <div class="media-overlay"></div>
@@ -304,7 +339,6 @@
         </div>
       `).join('');
 
-      // Select/deselect
       gallery.querySelectorAll('.pin-card').forEach(card => {
         card.addEventListener('click', () => {
           const id = parseInt(card.dataset.id);
@@ -325,6 +359,55 @@
     window.addEventListener('keydown', e => {
       if (e.key === 'PrintScreen' || (e.ctrlKey && (e.key === 's' || e.key === 'u'))) {
         e.preventDefault();
+      }
+    });
+
+    // Support modal
+    const floatBtn = document.getElementById('supportFloatBtn');
+    const overlay = document.getElementById('supportOverlay');
+    const closeBtn = document.getElementById('closeSupportBtn');
+    const sendBtn = document.getElementById('sendSupportBtn');
+    const subjectInput = document.getElementById('supportSubject');
+    const messageInput = document.getElementById('supportMessage');
+    const supportStatus = document.getElementById('supportStatus');
+
+    floatBtn.addEventListener('click', () => overlay.classList.add('active'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+    sendBtn.addEventListener('click', async () => {
+      const msg = messageInput.value.trim();
+      if (!msg) return alert('Please enter a message.');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+      supportStatus.textContent = '';
+      try {
+        const session = await supabase.auth.getSession();
+        if (!session.data.session) {
+          alert('You must be logged in.');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Message';
+          return;
+        }
+        const token = session.data.session.access_token;
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
+        });
+        if (!res.ok) throw new Error('Failed');
+        supportStatus.textContent = '✅ Message sent!';
+        subjectInput.value = '';
+        messageInput.value = '';
+        setTimeout(() => overlay.classList.remove('active'), 2000);
+      } catch (e) {
+        supportStatus.textContent = '❌ Error: ' + e.message;
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Message';
       }
     });
 

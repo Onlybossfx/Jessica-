@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Download</title>
+  <title>Thank You!</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
@@ -11,129 +11,281 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-    /* ========== Mobile‑first base ========== */
     body {
       background: #0a0a0a;
       color: #fff;
       font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
-      padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100dvh;
+      flex-direction: column;
     }
-
-    .container {
-      width: 100%;
-      max-width: 500px;
-      margin: 1.5rem;
-      padding: 2rem 1.5rem;
+    .card {
       background: #1a1a1a;
-      border-radius: 20px;
       border: 1px solid #333;
+      border-radius: 30px;
+      padding: 2.5rem 2rem;
       text-align: center;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-      box-sizing: border-box;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      animation: popIn 0.5s ease-out;
     }
-
-    .container h2 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .check-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(-10px); }
+    }
+    .card h2 {
       color: #e91e63;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
     }
-
-    .container p {
+    .card p {
       color: #ccc;
       margin-bottom: 1.5rem;
-      font-size: 1rem;
     }
-
     .btn-full {
+      display: block;
       width: 100%;
-      padding: 0.9rem;
+      padding: 1rem;
+      background: #e91e63;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 0.8rem;
+    }
+    .btn-full:hover { background: #ff3366; }
+    .btn-outline {
+      display: inline-block;
+      background: transparent;
+      border: 1px solid #e91e63;
+      color: #e91e63;
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 0 0.5rem;
+    }
+    .btn-outline:hover { background: rgba(233,30,99,0.1); }
+
+    /* Support floating button */
+    .support-float-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay.active { display: flex; }
+    .support-modal {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+    .support-modal h3 { color: #e91e63; margin-top: 0; }
+    .support-modal input,
+    .support-modal textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .support-modal textarea { height: 100px; resize: vertical; }
+    .support-modal button {
       background: #e91e63;
       border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 1.1rem;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
+      width: 100%;
     }
-
-    .btn-full:hover {
-      background: #ff3366;
-    }
-
-    .btn-full:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ========== Tablet & desktop ========== */
-    @media (min-width: 600px) {
-      .container {
-        margin: 2rem;
-        padding: 2.5rem;
-      }
-
-      .container h2 {
-        font-size: 2rem;
-      }
+    .support-modal button:disabled { opacity: 0.5; }
+    .support-modal .close-btn {
+      background: transparent;
+      border: none;
+      color: #aaa;
+      font-size: 1.5rem;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Thank you! 🎉</h2>
-    <p>Your download is ready.</p>
-    <button class="btn-full" id="downloadZip">Download ZIP</button>
+  <div class="card">
+    <div class="check-icon">🎉</div>
+    <h2>Thank You!</h2>
+    <p>Your payment was successful. Your download is ready.</p>
+    <button class="btn-full" id="downloadZip">📦 Download ZIP</button>
+    <div style="margin-top:1.5rem;">
+      <a href="dashboard.html" class="btn-outline">My Dashboard</a>
+      <a href="gallery.html" class="btn-outline">Browse More</a>
+    </div>
+    <p id="downloadStatus" style="margin-top:1rem; color:#aaa; font-size:0.9rem;"></p>
+  </div>
+
+  <!-- Support Floating Button & Modal -->
+  <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
+  <div class="support-modal-overlay" id="supportOverlay">
+    <div class="support-modal">
+      <button class="close-btn" id="closeSupportBtn">&times;</button>
+      <h3>Contact Support</h3>
+      <input type="text" id="supportSubject" placeholder="Subject (optional)">
+      <textarea id="supportMessage" placeholder="How can we help you?"></textarea>
+      <button id="sendSupportBtn">Send Message</button>
+      <p id="supportStatus" style="text-align:center; margin-top:0.5rem;"></p>
+    </div>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     if (!token) {
-      document.body.innerHTML = '<div class="container"><p>Invalid download link.</p></div>';
+      document.body.innerHTML = '<div class="card"><h2>Oops</h2><p>Invalid download link.</p><a href="gallery.html" class="btn-full">Go to Gallery</a></div>';
     }
 
+    // Download ZIP
     document.getElementById('downloadZip').addEventListener('click', async () => {
       const btn = document.getElementById('downloadZip');
+      const status = document.getElementById('downloadStatus');
       btn.disabled = true;
       btn.textContent = 'Preparing ZIP…';
+      status.textContent = '';
 
-      const session = await supabase.auth.getSession();
-const authToken = session.data.session.access_token;
-const downloadRes = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/smooth-worker', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ' + authToken,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({ download_token: token })
-});
+      try {
+        const session = await supabase.auth.getSession();
+        const authToken = session.data.session.access_token;
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/smooth-worker', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + authToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ download_token: token })
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.files) {
+          throw new Error(data?.error || 'Failed to fetch files');
+        }
 
-const data = await downloadRes.json();
-if (!downloadRes.ok || !data?.files) {
-  btn.textContent = 'Error';
-  alert(data?.error || 'Something went wrong');
-  return;
-}
-
-      const zip = new JSZip();
-      const promises = data.files.map(file =>
-        fetch(file.url)
-          .then(res => res.blob())
-          .then(blob => zip.file(file.name, blob))
-      );
-      await Promise.all(promises);
-      const content = await zip.generateAsync({ type: 'blob' });
-      saveAs(content, 'purchased_files.zip');
-      btn.textContent = 'Download Complete';
+        const zip = new JSZip();
+        const promises = data.files.map(file =>
+          fetch(file.url)
+            .then(r => r.blob())
+            .then(blob => zip.file(file.name, blob))
+        );
+        await Promise.all(promises);
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, 'purchased_files.zip');
+        btn.textContent = 'Download Complete ✅';
+        status.textContent = 'Enjoy your files!';
+      } catch (e) {
+        status.textContent = '❌ ' + e.message;
+        btn.disabled = false;
+        btn.textContent = '📦 Download ZIP';
+      }
     });
 
-    requireAuth();  // ensure session still active
+    requireAuth();
+
+    // Support modal
+    const floatBtn = document.getElementById('supportFloatBtn');
+    const overlay = document.getElementById('supportOverlay');
+    const closeBtn = document.getElementById('closeSupportBtn');
+    const sendBtn = document.getElementById('sendSupportBtn');
+    const subjectInput = document.getElementById('supportSubject');
+    const messageInput = document.getElementById('supportMessage');
+    const supportStatus = document.getElementById('supportStatus');
+
+    floatBtn.addEventListener('click', () => overlay.classList.add('active'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+    sendBtn.addEventListener('click', async () => {
+      const msg = messageInput.value.trim();
+      if (!msg) return alert('Please enter a message.');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+      supportStatus.textContent = '';
+      try {
+        const session = await supabase.auth.getSession();
+        if (!session.data.session) {
+          alert('You must be logged in.');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Message';
+          return;
+        }
+        const token2 = session.data.session.access_token;
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token2,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
+        });
+        if (!res.ok) throw new Error('Failed');
+        supportStatus.textContent = '✅ Message sent!';
+        subjectInput.value = '';
+        messageInput.value = '';
+        setTimeout(() => overlay.classList.remove('active'), 2000);
+      } catch (e) {
+        supportStatus.textContent = '❌ Error: ' + e.message;
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Message';
+      }
+    });
   </script>
 </body>
 </html>

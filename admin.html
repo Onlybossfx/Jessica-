@@ -9,16 +9,12 @@
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
   <style>
-    /* ========== Mobile‑first base ========== */
     body {
       background: #0a0a0a;
       color: #fff;
       font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
-      padding: 0;
     }
-
-    /* Navbar */
     .navbar {
       display: flex;
       justify-content: space-between;
@@ -26,13 +22,8 @@
       padding: 12px 16px;
       background: rgba(10,10,10,0.95);
       border-bottom: 1px solid #222;
-      flex-wrap: wrap;
-      gap: 8px;
     }
-    .navbar h2 {
-      font-size: 1.3rem;
-      margin: 0;
-    }
+    .navbar h2 { color: #e91e63; margin: 0; font-size: 1.3rem; }
     .nav-btn {
       padding: 0.4rem 1rem;
       border-radius: 20px;
@@ -40,28 +31,18 @@
       border: none;
       cursor: pointer;
       font-size: 0.85rem;
-    }
-    .nav-btn.logout {
       background: #333;
       color: #ddd;
     }
-
-    /* Admin section */
     .admin-section {
-      width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       margin: 2rem auto;
-      padding: 1.5rem 1.2rem;
-      background: #1a1a1a;
-      border-radius: 20px;
-      border: 1px solid #333;
-      box-sizing: border-box;
+      padding: 0 1rem;
     }
     .admin-section h2 {
       font-size: 1.5rem;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
     }
-
     .admin-section input,
     .admin-section select,
     .admin-section label {
@@ -71,13 +52,7 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
-
-    .admin-section label {
-      color: #ccc;
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-    }
-
+    .admin-section label { color: #ccc; font-size: 0.9rem; margin-bottom: 0.3rem; }
     .admin-section input[type="text"],
     .admin-section input[type="number"],
     .admin-section select {
@@ -88,35 +63,14 @@
       color: #fff;
       font-size: 1rem;
       outline: none;
-      transition: border 0.2s;
-      -webkit-appearance: none;
     }
-
-    .admin-section input:focus,
-    .admin-section select:focus {
-      border-color: #e91e63;
-    }
-
-    /* File inputs */
     .admin-section input[type="file"] {
       background: #222;
       border: 1px solid #444;
       border-radius: 10px;
       padding: 0.6rem;
       color: #ccc;
-      font-size: 0.9rem;
     }
-
-    .admin-section input[type="file"]::file-selector-button {
-      background: #333;
-      color: #fff;
-      border: none;
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      margin-right: 1rem;
-      cursor: pointer;
-    }
-
     .btn-full {
       width: 100%;
       padding: 0.9rem;
@@ -127,59 +81,165 @@
       font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-full:disabled { opacity: 0.5; }
+    .media-list {
+      margin-top: 2rem;
+    }
+    .media-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.7rem;
+      border: 1px solid #333;
+    }
+    .media-item img, .media-item video {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 1rem;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .media-item .info { flex: 1; }
+    .media-item .info h4 { margin: 0 0 0.2rem; font-size: 0.95rem; }
+    .media-item .info span { color: #e91e63; font-weight: bold; font-size: 0.85rem; }
+    .delete-btn {
+      background: transparent;
+      border: 1px solid #e91e63;
+      color: #e91e63;
+      border-radius: 20px;
+      padding: 0.3rem 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    #uploadStatus, #mediaStatus {
+      text-align: center;
       margin-top: 0.5rem;
     }
 
-    .btn-full:hover {
-      background: #ff3366;
+    /* Support floating button */
+    .support-float-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
-    #status {
-      text-align: center;
-      margin-top: 1rem;
+    .support-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .support-modal-overlay.active { display: flex; }
+    .support-modal {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+    }
+    .support-modal h3 { color: #e91e63; margin-top: 0; }
+    .support-modal input,
+    .support-modal textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .support-modal textarea { height: 100px; resize: vertical; }
+    .support-modal button {
+      background: #e91e63;
+      border: none;
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .support-modal button:disabled { opacity: 0.5; }
+    .support-modal .close-btn {
+      background: transparent;
+      border: none;
       color: #aaa;
-      font-size: 0.9rem;
-    }
-
-    /* ========== Tablet & desktop ========== */
-    @media (min-width: 600px) {
-      .navbar {
-        padding: 14px 24px;
-      }
-      .navbar h2 {
-        font-size: 1.5rem;
-      }
-      .nav-btn {
-        font-size: 0.9rem;
-        padding: 0.5rem 1.2rem;
-      }
-      .admin-section {
-        margin-top: 3rem;
-        padding: 2rem;
-      }
-      .admin-section h2 {
-        font-size: 1.8rem;
-      }
+      font-size: 1.5rem;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
     }
   </style>
 </head>
 <body>
   <div class="navbar">
-    <h2 style="color:#e91e63;">Admin Panel</h2>
-    <button class="nav-btn logout" onclick="logout()">Logout</button>
+    <h2>Admin Panel</h2>
+    <button class="nav-btn" onclick="logout()">Logout</button>
   </div>
   <div class="admin-section">
     <h2>Upload New Media</h2>
     <input type="text" id="title" placeholder="Title" required>
-    <select id="type"><option value="image">Image</option><option value="video">Video</option></select>
-    <input type="number" id="price" placeholder="Price (USD)" min="1">
+    <select id="type">
+      <option value="image">Image</option>
+      <option value="video">Video</option>
+    </select>
+    <input type="number" id="price" placeholder="Price (USD)" min="1" value="5">
     <label>Original file (high-res)</label>
     <input type="file" id="originalFile" accept="image/*,video/*" required>
     <label>Preview file (watermarked/low-res)</label>
     <input type="file" id="previewFile" accept="image/*,video/*" required>
     <button class="btn-full" id="uploadBtn">Upload</button>
-    <p id="status" style="margin-top:1rem;"></p>
+    <p id="uploadStatus"></p>
+
+    <div class="media-list">
+      <h3>All Media</h3>
+      <div id="mediaContainer"></div>
+      <p id="mediaStatus"></p>
+    </div>
+  </div>
+
+  <!-- Support Floating Button & Modal -->
+  <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
+  <div class="support-modal-overlay" id="supportOverlay">
+    <div class="support-modal">
+      <button class="close-btn" id="closeSupportBtn">&times;</button>
+      <h3>Contact Support</h3>
+      <input type="text" id="supportSubject" placeholder="Subject (optional)">
+      <textarea id="supportMessage" placeholder="How can we help you?"></textarea>
+      <button id="sendSupportBtn">Send Message</button>
+      <p id="supportStatus" style="text-align:center; margin-top:0.5rem;"></p>
+    </div>
   </div>
 
   <script>
@@ -189,10 +249,62 @@
       const { data } = await supabase.from('admin_users').select('user_id').eq('user_id', user.id).single();
       if (!data) {
         alert('Access denied');
-        window.location.href = 'gallery.html';
+        window.location.href = 'dashboard.html';
       }
     }
 
+    async function loadMedia() {
+      const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false });
+      if (error) {
+        document.getElementById('mediaStatus').textContent = 'Error loading media.';
+        return;
+      }
+      const container = document.getElementById('mediaContainer');
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color:#777; font-style:italic;">No media uploaded yet.</p>';
+        return;
+      }
+      container.innerHTML = data.map(item => `
+        <div class="media-item">
+          ${item.type === 'image' 
+            ? `<img src="${item.preview_url}" draggable="false" alt="${item.title}">`
+            : `<video src="${item.preview_url}" muted loop style="width:50px;height:50px;object-fit:cover;border-radius:8px;margin-right:1rem;"></video>`}
+          <div class="info">
+            <h4>${item.title}</h4>
+            <span>$${item.price}</span>
+          </div>
+          <button class="delete-btn" data-id="${item.id}" data-original="${item.original_path}" data-preview="${item.preview_path}">Delete</button>
+        </div>
+      `).join('');
+
+      // Attach delete handlers
+      container.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const orig = btn.dataset.original;
+          const prev = btn.dataset.preview;
+          if (!confirm('Delete this media permanently?')) return;
+          btn.disabled = true;
+          btn.textContent = 'Deleting…';
+          try {
+            // Delete from storage (originals bucket is private, previews public)
+            await supabase.storage.from('originals').remove([orig]);
+            await supabase.storage.from('previews').remove([prev]);
+            // Delete from database
+            const { error: dbError } = await supabase.from('media').delete().eq('id', id);
+            if (dbError) throw dbError;
+            // Refresh list
+            loadMedia();
+          } catch (e) {
+            alert('Delete failed: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+          }
+        });
+      });
+    }
+
+    // Upload handler
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const title = document.getElementById('title').value;
       const type = document.getElementById('type').value;
@@ -201,36 +313,86 @@
       const preview = document.getElementById('previewFile').files[0];
       if (!title || !original || !preview) return alert('Fill all fields');
 
-      const status = document.getElementById('status');
+      const status = document.getElementById('uploadStatus');
       status.textContent = 'Uploading…';
 
-      // Upload original to private bucket
-      const origPath = `${Date.now()}_original.${original.name.split('.').pop()}`;
-      const { error: origErr } = await supabase.storage.from('originals').upload(origPath, original);
-      if (origErr) { status.textContent = origErr.message; return; }
+      try {
+        const origPath = `${Date.now()}_original.${original.name.split('.').pop()}`;
+        const { error: origErr } = await supabase.storage.from('originals').upload(origPath, original);
+        if (origErr) throw origErr;
 
-      // Upload preview to public bucket
-      const prevPath = `${Date.now()}_preview.${preview.name.split('.').pop()}`;
-      const { error: prevErr } = await supabase.storage.from('previews').upload(prevPath, preview);
-      if (prevErr) { status.textContent = prevErr.message; return; }
+        const prevPath = `${Date.now()}_preview.${preview.name.split('.').pop()}`;
+        const { error: prevErr } = await supabase.storage.from('previews').upload(prevPath, preview);
+        if (prevErr) throw prevErr;
 
-      // Get public URL for preview
-      const { data: { publicUrl } } = supabase.storage.from('previews').getPublicUrl(prevPath);
+        const { data: { publicUrl } } = supabase.storage.from('previews').getPublicUrl(prevPath);
 
-      const { error: insertErr } = await supabase.from('media').insert({
-        title, type, price, original_path: origPath, preview_path: prevPath, preview_url: publicUrl
-      });
-      if (insertErr) {
-        status.textContent = insertErr.message;
-      } else {
+        const { error: insertErr } = await supabase.from('media').insert({
+          title, type, price, original_path: origPath, preview_path: prevPath, preview_url: publicUrl
+        });
+        if (insertErr) throw insertErr;
+
         status.textContent = 'Upload successful!';
         document.getElementById('title').value = '';
         document.getElementById('originalFile').value = '';
         document.getElementById('previewFile').value = '';
+        loadMedia();
+      } catch (e) {
+        status.textContent = 'Error: ' + e.message;
+      }
+    });
+
+    // Support modal (identical to other pages)
+    const floatBtn = document.getElementById('supportFloatBtn');
+    const overlay = document.getElementById('supportOverlay');
+    const closeBtn = document.getElementById('closeSupportBtn');
+    const sendBtn = document.getElementById('sendSupportBtn');
+    const subjectInput = document.getElementById('supportSubject');
+    const messageInput = document.getElementById('supportMessage');
+    const supportStatus = document.getElementById('supportStatus');
+
+    floatBtn.addEventListener('click', () => overlay.classList.add('active'));
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+
+    sendBtn.addEventListener('click', async () => {
+      const msg = messageInput.value.trim();
+      if (!msg) return alert('Please enter a message.');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending…';
+      supportStatus.textContent = '';
+      try {
+        const session = await supabase.auth.getSession();
+        if (!session.data.session) {
+          alert('You must be logged in.');
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Message';
+          return;
+        }
+        const token = session.data.session.access_token;
+        const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
+        });
+        if (!res.ok) throw new Error('Failed');
+        supportStatus.textContent = '✅ Message sent!';
+        subjectInput.value = '';
+        messageInput.value = '';
+        setTimeout(() => overlay.classList.remove('active'), 2000);
+      } catch (e) {
+        supportStatus.textContent = '❌ Error: ' + e.message;
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Message';
       }
     });
 
     checkAdmin();
+    loadMedia();
   </script>
 </body>
 </html>
