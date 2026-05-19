@@ -175,7 +175,7 @@
         const session = await supabase.auth.getSession();
         const token = session.data.session.access_token;
         const txRef = `SUB-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
-        const amountUSD = plan === 'yearly' ? 100 : 10;
+        const amountUSD = plan === 'yearly' ? 850 : 100;
         const localAmount = amountUSD * conversionRate; // If USD, conversionRate is 1
         const email = (await supabase.auth.getUser()).data.user?.email;
 
