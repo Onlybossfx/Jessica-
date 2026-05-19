@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
@@ -41,26 +40,13 @@
       margin: 2rem auto;
       padding: 0 1.2rem;
     }
-
-    /* Welcome section */
     .welcome {
       text-align: center;
       margin-bottom: 2rem;
     }
-    .welcome h1 {
-      font-size: 2rem;
-      margin-bottom: 0.3rem;
-    }
-    .welcome .highlight {
-      color: #e91e63;
-    }
-    .welcome p {
-      color: #aaa;
-      font-size: 1.1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Action cards */
+    .welcome h1 { font-size: 2rem; margin-bottom: 0.3rem; }
+    .welcome .highlight { color: #e91e63; }
+    .welcome p { color: #aaa; font-size: 1.1rem; margin-bottom: 1.5rem; }
     .action-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -78,26 +64,10 @@
       text-decoration: none;
       color: inherit;
     }
-    .action-card:hover {
-      transform: translateY(-3px);
-      border-color: #e91e63;
-    }
-    .action-card .icon {
-      font-size: 2.2rem;
-      margin-bottom: 0.8rem;
-    }
-    .action-card h3 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: #fff;
-    }
-    .action-card p {
-      margin: 0.3rem 0 0;
-      font-size: 0.85rem;
-      color: #888;
-    }
-
-    /* Stats section */
+    .action-card:hover { transform: translateY(-3px); border-color: #e91e63; }
+    .action-card .icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
+    .action-card h3 { margin: 0; font-size: 1.1rem; color: #fff; }
+    .action-card p { margin: 0.3rem 0 0; font-size: 0.85rem; color: #888; }
     .stats {
       background: #1a1a1a;
       border-radius: 16px;
@@ -106,26 +76,10 @@
       margin-bottom: 2rem;
       text-align: center;
     }
-    .stats .amount {
-      font-size: 2.2rem;
-      font-weight: bold;
-      color: #e91e63;
-    }
-    .stats .label {
-      font-size: 0.9rem;
-      color: #aaa;
-      margin-top: 0.2rem;
-    }
-
-    /* Recent purchases list */
-    .purchases-section {
-      margin-top: 2rem;
-    }
-    .section-title {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      color: #e91e63;
-    }
+    .stats .amount { font-size: 2.2rem; font-weight: bold; color: #e91e63; }
+    .stats .label { font-size: 0.9rem; color: #aaa; margin-top: 0.2rem; }
+    .purchases-section { margin-top: 2rem; }
+    .section-title { font-size: 1.2rem; margin-bottom: 1rem; color: #e91e63; }
     .purchase-card {
       background: #1a1a1a;
       border-radius: 12px;
@@ -148,89 +102,44 @@
       font-weight: 600;
       font-size: 0.85rem;
     }
-    .empty {
-      color: #777;
-      font-style: italic;
-      text-align: center;
-      padding: 2rem 0;
-    }
+    .empty { color: #777; font-style: italic; text-align: center; padding: 2rem 0; }
 
     /* Support floating button (same as before) */
     .support-float-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #e91e63;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
-      font-size: 1.8rem;
-      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
-      cursor: pointer;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: fixed; bottom: 20px; right: 20px;
+      background: #e91e63; color: white; border: none; border-radius: 50%;
+      width: 56px; height: 56px; font-size: 1.8rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4); cursor: pointer; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
     }
     .support-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 2000;
+      align-items: center; justify-content: center;
     }
     .support-modal-overlay.active { display: flex; }
     .support-modal {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 1.5rem;
-      width: 90%;
-      max-width: 400px;
-      position: relative;
+      background: #1a1a1a; border: 1px solid #333; border-radius: 20px;
+      padding: 1.5rem; width: 90%; max-width: 400px; position: relative;
     }
     .support-modal h3 { color: #e91e63; margin-top: 0; }
-    .support-modal input,
-    .support-modal textarea {
-      width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 10px;
-      color: white;
-      font-size: 1rem;
-      box-sizing: border-box;
+    .support-modal input, .support-modal textarea {
+      width: 100%; padding: 0.8rem; margin-bottom: 1rem;
+      background: #222; border: 1px solid #444; border-radius: 10px;
+      color: white; font-size: 1rem; box-sizing: border-box;
     }
     .support-modal textarea { height: 100px; resize: vertical; }
     .support-modal button {
-      background: #e91e63;
-      border: none;
-      color: white;
-      padding: 0.7rem 1.5rem;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
+      background: #e91e63; border: none; color: white;
+      padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: bold;
+      cursor: pointer; width: 100%;
     }
     .support-modal button:disabled { opacity: 0.5; }
     .support-modal .close-btn {
-      background: transparent;
-      border: none;
-      color: #aaa;
-      font-size: 1.5rem;
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      cursor: pointer;
-      width: auto;
-      padding: 0;
+      background: transparent; border: none; color: #aaa;
+      font-size: 1.5rem; position: absolute; top: 10px; right: 15px;
+      cursor: pointer; width: auto; padding: 0;
     }
-
     @media (min-width: 600px) {
       .navbar { padding: 14px 24px; }
     }
@@ -243,33 +152,29 @@
   </div>
 
   <div class="dashboard-container">
-    <!-- Welcome message (filled by JS) -->
     <div class="welcome">
-      <h1>Hello, <span id="userName" class="highlight">friend</span></h1>
-      <p>Nice to have you back my love. What are we doing today?</p>
+      <h1>Hello, <span id="userName" class="highlight">friend</span> 👋</h1>
+      <p>Nice to have you back. What are we doing today?</p>
     </div>
 
-    <!-- Quick actions -->
     <div class="action-cards">
       <a href="gallery.html" class="action-card">
-        <div class="icon"><i class="fa-solid fa-images"></i></div>
+        <div class="icon">🖼️</div>
         <h3>Browse New</h3>
-        <p>Discover fresh sexy content</p>
+        <p>Discover fresh content</p>
       </a>
       <div class="action-card" onclick="scrollToPurchases()">
-        <div class="icon"><i class="fa-solid fa-download"></i></div>
+        <div class="icon">📥</div>
         <h3>My Downloads</h3>
         <p>View purchased items</p>
       </div>
     </div>
 
-    <!-- Spending stats -->
     <div class="stats">
       <div class="amount" id="totalSpent">$0.00</div>
       <div class="label">Total spent so far</div>
     </div>
 
-    <!-- Recent purchases (same as before) -->
     <div class="purchases-section" id="purchasesSection">
       <h3 class="section-title">Recent Purchases</h3>
       <div id="purchasesList"></div>
@@ -292,34 +197,29 @@
   <script>
     async function loadDashboard() {
       await requireAuth();
+      if (!await requireSubscription()) return;   // ← subscription gate
+      await ensureCartBelongsToCurrentUser();      // ← cart isolation
+
       const user = await getCurrentUser();
-      
-      // Friendly name from email (e.g. "jessica" from "jessica@example.com")
       let name = 'friend';
       if (user?.email) {
         const localPart = user.email.split('@')[0];
-        if (localPart) {
-          name = localPart.charAt(0).toUpperCase() + localPart.slice(1);
-        }
+        if (localPart) name = localPart.charAt(0).toUpperCase() + localPart.slice(1);
       }
       document.getElementById('userName').textContent = name;
 
-      // Calculate total spent
       const { data: orders, error: orderError } = await supabase
         .from('orders')
         .select('id, amount, created_at, download_token, status')
         .eq('status', 'paid')
+        .eq('user_id', user.id)                     // ← only current user's orders
         .order('created_at', { ascending: false });
 
-      if (orderError) {
-        console.error(orderError);
-        return;
-      }
+      if (orderError) { console.error(orderError); return; }
 
       const totalSpent = orders.reduce((sum, o) => sum + o.amount, 0);
       document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
 
-      // Recent purchases list (max 10)
       const recentOrders = orders.slice(0, 10);
       const purchasesDiv = document.getElementById('purchasesList');
       if (recentOrders.length === 0) {
@@ -381,10 +281,7 @@
         const token = session.data.session.access_token;
         const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
           method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
         });
         if (!res.ok) throw new Error('Failed');

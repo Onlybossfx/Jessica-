@@ -299,8 +299,12 @@
       document.getElementById('payBtn').disabled = false;
     }
 
-    async function loadCheckout() {
+      async function loadCheckout() {
       await requireAuth();
+      if (!await requireSubscription()) return;   // ← gate
+      await ensureCartBelongsToCurrentUser();
+      // refresh selected from localStorage after possible reset
+      selected = JSON.parse(localStorage.getItem('selectedMedia') || '[]');
       if (selected.length === 0) {
         document.getElementById('itemsContainer').innerHTML = '<p style="text-align:center; color:#aaa; padding:2rem;">No items selected. <a href="gallery.html">Browse gallery</a></p>';
         return;

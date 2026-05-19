@@ -9,108 +9,53 @@
   <script src="supabase.js"></script>
   <script src="auth.js"></script>
   <style>
-  /* ===== Mobile responsiveness for auth pages ===== */
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;               /* respects iOS Safari bottom bar */
-  font-family: system-ui, -apple-system, sans-serif;
-  color: #fff;
-}
-
-.auth-container {
-  width: 100%;
-  max-width: 400px;
-  margin: 1rem;                    /* prevent touching screen edges */
-  padding: 2rem 1.5rem;
-  border: 1px solid #333;
-  border-radius: 20px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-}
-
-.auth-container h2 {
-  text-align: center;
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
-}
-
-.input-group {
-  margin-bottom: 1.2rem;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 0.4rem;
-  color: #aaa;
-  font-size: 0.9rem;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 0.85rem;
-  font-size: 1rem;
-  border: 1px solid #444;
-  border-radius: 10px;
-  outline: none;
-  transition: border 0.2s;
-  -webkit-appearance: none;   /* removes iOS inner shadow */
-  box-sizing: border-box;     /* ensures padding doesn't break width */
-}
-
-.input-group input:focus {
-  border-color: #e91e63;
-}
-
-.btn-full {
-  width: 100%;
-  padding: 0.9rem;
-  background: #e91e63;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background 0.2s;
-}
-
-.btn-full:hover {
-  background: #ff3366;
-}
-
-.auth-link {
-  text-align: center;
-  margin-top: 1.2rem;
-  color: #aaa;
-  font-size: 0.95rem;
-}
-
-.auth-link a {
-  color: #e91e63;
-  text-decoration: none;
-}
-  
-  .forgot{
-    color: #e91e63;
-    text-decoration: none;
-  }
-
-/* Small extra padding for tablets and up */
-@media (min-width: 600px) {
-  .auth-container {
-    padding: 2.5rem;
-  }
-}
+    body {
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      margin: 0;
+    }
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem 1.5rem;
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid #333;
+      margin: 20px;
+    }
+    .auth-container h2 { text-align: center; margin-bottom: 1.5rem; }
+    .input-group { margin-bottom: 1rem; }
+    .input-group label { display: block; margin-bottom: 0.3rem; color: #aaa; }
+    .input-group input {
+      width: 100%;
+      padding: 0.8rem;
+      background: #fff;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: #e91e63;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .btn-full {
+      width: 100%;
+      padding: 0.9rem;
+      background: #e91e63;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .auth-link { text-align: center; margin-top: 1rem; color: #aaa; }
+    .auth-link a { color: #e91e63; text-decoration: none; }
   </style>
 </head>
-<body style="height: 100dvh">
+<body>
   <div class="auth-container">
     <h2>Welcome Back</h2>
     <div class="input-group">
@@ -121,20 +66,27 @@ body {
       <label>Password</label>
       <input type="password" id="password" placeholder="••••••••" required>
     </div>
-    <a  class="forgot" href="forgot-password.html">Forgot password?</a>
     <button class="btn-full" id="loginBtn">Log In</button>
     <p class="auth-link">Don't have an account? <a href="register.html">Sign up</a></p>
+    <p style="text-align:center; margin-top:0.5rem;"><a href="forgot-password.html" style="color:#aaa; font-size:0.9rem;">Forgot password?</a></p>
   </div>
+
   <script>
-    // If already logged in, go straight to gallery
     redirectIfLoggedIn();
 
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return alert(error.message);
-      window.location.href = 'gallery.html';
+      
+      // Set cart owner and clear old cart
+      if (data.user) {
+        localStorage.setItem('cartOwnerId', data.user.id);
+        localStorage.removeItem('selectedMedia');
+      }
+      
+      window.location.href = 'dashboard.html';
     });
   </script>
 </body>
