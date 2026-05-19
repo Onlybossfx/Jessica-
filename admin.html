@@ -177,7 +177,7 @@
       margin-top: 0.5rem;
     }
 
-    /* Support floating button (optional, keep if wanted) */
+    /* Support floating button (optional) */
     .support-float-btn {
       position: fixed;
       bottom: 20px;
@@ -286,6 +286,13 @@
       <input type="file" id="originalFile" accept="image/*,video/*" required>
       <label>Preview file (watermarked/low-res)</label>
       <input type="file" id="previewFile" accept="image/*,video/*" required>
+
+      <!-- Free sample checkbox -->
+      <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <input type="checkbox" id="freeSample" style="width:auto;">
+        <span style="color:#ccc;">Free Sample (max 4 per day)</span>
+      </label>
+
       <button class="btn-full" id="uploadBtn">Upload</button>
       <p id="uploadStatus"></p>
     </div>
@@ -309,7 +316,7 @@
     </div>
   </div>
 
-  <!-- Support Floating Button & Modal (optional but consistent) -->
+  <!-- Support Floating Button & Modal (optional) -->
   <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
   <div class="support-modal-overlay" id="supportOverlay">
     <div class="support-modal">
@@ -348,7 +355,7 @@
       }
     }
 
-    // Load media (used in Media tab)
+    // Load media (Media tab)
     async function loadMedia() {
       const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false });
       if (error) {
@@ -368,6 +375,7 @@
           <div class="info">
             <h4>${item.title}</h4>
             <span>$${item.price}</span>
+            ${item.is_free_sample ? ' 🎁 Free Sample' : ''}
           </div>
           <button class="delete-btn" data-id="${item.id}" data-original="${item.original_path}" data-preview="${item.preview_path}">Delete</button>
         </div>
@@ -433,14 +441,28 @@
       `).join('');
     }
 
-    // Upload handler
+    // Upload handler (with free sample logic)
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const title = document.getElementById('title').value;
       const type = document.getElementById('type').value;
       const price = parseInt(document.getElementById('price').value);
       const original = document.getElementById('originalFile').files[0];
       const preview = document.getElementById('previewFile').files[0];
+      const isFree = document.getElementById('freeSample').checked;
       if (!title || !original || !preview) return alert('Fill all fields');
+
+      // Enforce 4 free sample limit per day
+      if (isFree) {
+        const today = new Date().toISOString().split('T')[0];
+        const { count } = await supabase
+          .from('media')
+          .select('id', { count: 'exact' })
+          .eq('is_free_sample', true)
+          .eq('free_sample_date', today);
+        if (count >= 4) {
+          return alert('You have already uploaded 4 free samples today.');
+        }
+      }
 
       const status = document.getElementById('uploadStatus');
       status.textContent = 'Uploading…';
@@ -456,17 +478,24 @@
 
         const { data: { publicUrl } } = supabase.storage.from('previews').getPublicUrl(prevPath);
 
-        const { error: insertErr } = await supabase.from('media').insert({
-          title, type, price, original_path: origPath, preview_path: prevPath, preview_url: publicUrl
-        });
+        const insertData = {
+          title, type, price,
+          original_path: origPath,
+          preview_path: prevPath,
+          preview_url: publicUrl,
+          is_free_sample: isFree,
+          free_sample_date: isFree ? new Date().toISOString().split('T')[0] : null
+        };
+
+        const { error: insertErr } = await supabase.from('media').insert(insertData);
         if (insertErr) throw insertErr;
 
         status.textContent = 'Upload successful!';
         document.getElementById('title').value = '';
         document.getElementById('originalFile').value = '';
         document.getElementById('previewFile').value = '';
-        // Reload media list in the background
-        loadMedia();
+        document.getElementById('freeSample').checked = false;
+        loadMedia(); // refresh media list
       } catch (e) {
         status.textContent = 'Error: ' + e.message;
       }

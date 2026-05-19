@@ -126,17 +126,20 @@
     .pin-info h4 {
       font-size: 1rem;
       margin-bottom: 0.2rem;
+      z-index: 999
     }
     .price {
       color: #e91e63;
       font-weight: bold;
+      z-index: 999
     }
     .media-overlay {
-      position: absolute;
-      inset: 0;
-      background: transparent;
-      z-index: 2;
-    }
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000, rgba(0,0,0,0.5) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
 
     .desc {
       margin: 0 15px;

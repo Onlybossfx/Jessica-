@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Free Samples</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: rgba(10,10,10,0.95);
+      border-bottom: 1px solid #222;
+    }
+    .navbar h2 { color: #e91e63; margin: 0; font-size: 1.3rem; }
+    .nav-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      background: #333;
+      color: #ddd;
+    }
+    .container {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1.2rem;
+      text-align: center;
+    }
+    .hero-msg {
+      margin: 2rem 0 1.5rem;
+    }
+    .hero-msg h1 {
+      font-size: 2rem;
+      color: #e91e63;
+      margin-bottom: 0.5rem;
+    }
+    .hero-msg p {
+      color: #aaa;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+    }
+    .free-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .free-card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #333;
+      transition: transform 0.2s;
+    }
+    .free-card:hover { transform: scale(1.02); }
+    .free-card img, .free-card video {
+      width: 100%;
+      display: block;
+      pointer-events: auto;   /* allow controls to be clicked */
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .free-card .info {
+      padding: 0.8rem;
+      text-align: left;
+    }
+    .free-card .info h4 { margin: 0 0 0.2rem; font-size: 1rem; }
+    .free-card .info p { margin: 0; color: #aaa; font-size: 0.85rem; }
+    .cta-btn {
+      display: inline-block;
+      background: #e91e63;
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    .empty-msg {
+      padding: 3rem 0;
+      color: #777;
+      font-style: italic;
+    }
+    @media (max-width: 500px) {
+      .free-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h2>Daily Freebies</h2>
+    <div>
+      <a href="dashboard.html" class="nav-btn" style="background:transparent; color:#aaa; text-decoration:none;">Dashboard</a>
+      <button class="nav-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="hero-msg">
+      <h1>Today’s Free Samples</h1>
+      <p>A fresh taste of what’s new. Available only to subscribers.</p>
+    </div>
+    <div class="free-grid" id="freeGrid"></div>
+    <a href="gallery.html" class="cta-btn">Explore Full Gallery</a>
+  </div>
+
+  <script>
+    async function loadFreebies() {
+      await requireAuth();
+      if (!await requireSubscription()) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('media')
+        .select('*')
+        .eq('is_free_sample', true)
+        .eq('free_sample_date', today);
+
+      const grid = document.getElementById('freeGrid');
+      if (error) {
+        grid.innerHTML = '<div class="empty-msg">Could not load free samples.</div>';
+        return;
+      }
+      if (!data || data.length === 0) {
+        grid.innerHTML = '<div class="empty-msg">No free samples today. Come back tomorrow!</div>';
+        return;
+      }
+      grid.innerHTML = data.map(item => `
+        <div class="free-card">
+          ${item.type === 'image'
+            ? `<img src="${item.preview_url}" draggable="false" alt="${item.title}">`
+            : `<video src="${item.preview_url}" controls muted loop playsinline controlsList="nodownload" oncontextmenu="return false;"></video>`}
+          <div class="info">
+            <h4>${item.title}</h4>
+            <p>Free today only</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Anti‑copy
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    window.addEventListener('keydown', e => {
+      if (e.key === 'PrintScreen' || (e.ctrlKey && (e.key === 's' || e.key === 'u'))) e.preventDefault();
+    });
+
+    loadFreebies();
+  </script>
+</body>
+</html>
