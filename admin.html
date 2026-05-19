@@ -34,15 +34,48 @@
       background: #333;
       color: #ddd;
     }
-    .admin-section {
-      max-width: 600px;
-      margin: 2rem auto;
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 1rem 0;
+      max-width: 700px;
+      margin: 0 auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      padding: 0.6rem 1.2rem;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 25px;
+      color: #aaa;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    .tab-btn.active {
+      background: #e91e63;
+      color: white;
+      border-color: #e91e63;
+    }
+
+    /* Tab content */
+    .tab-content {
+      display: none;
+      max-width: 700px;
+      margin: 1.5rem auto;
       padding: 0 1rem;
     }
-    .admin-section h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+    .tab-content.active {
+      display: block;
     }
+
+    /* Upload form */
+    .admin-section h2 { font-size: 1.5rem; margin-bottom: 1rem; }
     .admin-section input,
     .admin-section select,
     .admin-section label {
@@ -84,8 +117,10 @@
       margin-top: 0.5rem;
     }
     .btn-full:disabled { opacity: 0.5; }
+
+    /* Media & message items */
     .media-list {
-      margin-top: 2rem;
+      margin-top: 0;
     }
     .media-item {
       display: flex;
@@ -120,12 +155,29 @@
       font-weight: 600;
       font-size: 0.8rem;
     }
-    #uploadStatus, #mediaStatus {
+
+    /* Message specific */
+    .message-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
+    }
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .message-header strong { font-size: 0.95rem; }
+    .message-header small { color: #aaa; font-size: 0.8rem; }
+    .message-subject { color: #e91e63; font-weight: bold; }
+    .message-body { color: #ccc; }
+
+    #uploadStatus, #mediaStatus, #messagesStatus {
       text-align: center;
       margin-top: 0.5rem;
     }
 
-    /* Support floating button */
+    /* Support floating button (optional, keep if wanted) */
     .support-float-btn {
       position: fixed;
       bottom: 20px;
@@ -200,6 +252,11 @@
       width: auto;
       padding: 0;
     }
+
+    @media (min-width: 600px) {
+      .navbar { padding: 14px 24px; }
+      .tabs { gap: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -207,21 +264,35 @@
     <h2>Admin Panel</h2>
     <button class="nav-btn" onclick="logout()">Logout</button>
   </div>
-  <div class="admin-section">
-    <h2>Upload New Media</h2>
-    <input type="text" id="title" placeholder="Title" required>
-    <select id="type">
-      <option value="image">Image</option>
-      <option value="video">Video</option>
-    </select>
-    <input type="number" id="price" placeholder="Price (USD)" min="1" value="5">
-    <label>Original file (high-res)</label>
-    <input type="file" id="originalFile" accept="image/*,video/*" required>
-    <label>Preview file (watermarked/low-res)</label>
-    <input type="file" id="previewFile" accept="image/*,video/*" required>
-    <button class="btn-full" id="uploadBtn">Upload</button>
-    <p id="uploadStatus"></p>
 
+  <!-- Tab navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="upload">Upload</button>
+    <button class="tab-btn" data-tab="media">Media</button>
+    <button class="tab-btn" data-tab="messages">Messages</button>
+  </div>
+
+  <!-- Tab: Upload -->
+  <div class="tab-content active" id="tab-upload">
+    <div class="admin-section">
+      <h2>Upload New Media</h2>
+      <input type="text" id="title" placeholder="Title" required>
+      <select id="type">
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+      <input type="number" id="price" placeholder="Price (USD)" min="1" value="5">
+      <label>Original file (high-res)</label>
+      <input type="file" id="originalFile" accept="image/*,video/*" required>
+      <label>Preview file (watermarked/low-res)</label>
+      <input type="file" id="previewFile" accept="image/*,video/*" required>
+      <button class="btn-full" id="uploadBtn">Upload</button>
+      <p id="uploadStatus"></p>
+    </div>
+  </div>
+
+  <!-- Tab: Media -->
+  <div class="tab-content" id="tab-media">
     <div class="media-list">
       <h3>All Media</h3>
       <div id="mediaContainer"></div>
@@ -229,7 +300,16 @@
     </div>
   </div>
 
-  <!-- Support Floating Button & Modal -->
+  <!-- Tab: Messages -->
+  <div class="tab-content" id="tab-messages">
+    <div class="media-list">
+      <h3>Support Messages</h3>
+      <div id="messagesContainer"></div>
+      <p id="messagesStatus"></p>
+    </div>
+  </div>
+
+  <!-- Support Floating Button & Modal (optional but consistent) -->
   <button class="support-float-btn" id="supportFloatBtn" title="Chat with support">💬</button>
   <div class="support-modal-overlay" id="supportOverlay">
     <div class="support-modal">
@@ -243,6 +323,21 @@
   </div>
 
   <script>
+    // Tab switching
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tabContents.forEach(c => c.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+      });
+    });
+
+    // Admin check
     async function checkAdmin() {
       await requireAuth();
       const user = await getCurrentUser();
@@ -253,6 +348,7 @@
       }
     }
 
+    // Load media (used in Media tab)
     async function loadMedia() {
       const { data, error } = await supabase.from('media').select('*').order('created_at', { ascending: false });
       if (error) {
@@ -277,7 +373,7 @@
         </div>
       `).join('');
 
-      // Attach delete handlers with detailed logging
+      // Attach delete handlers with logging
       container.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.dataset.id;
@@ -286,46 +382,58 @@
           if (!confirm('Delete this media permanently?')) return;
           btn.disabled = true;
           btn.textContent = 'Deleting…';
-          console.log('Deleting media:', { id, orig, prev });
 
-          // Step 1: Delete original from private bucket
           const { error: origErr } = await supabase.storage.from('originals').remove([orig]);
           if (origErr) {
-            console.error('Failed to delete original:', origErr);
             alert('Failed to delete original file: ' + origErr.message);
-            btn.disabled = false;
-            btn.textContent = 'Delete';
-            return;
+            btn.disabled = false; btn.textContent = 'Delete'; return;
           }
-          console.log('Original file deleted successfully.');
-
-          // Step 2: Delete preview from public bucket
           const { error: prevErr } = await supabase.storage.from('previews').remove([prev]);
           if (prevErr) {
-            console.error('Failed to delete preview:', prevErr);
             alert('Failed to delete preview file: ' + prevErr.message);
-            btn.disabled = false;
-            btn.textContent = 'Delete';
-            return;
+            btn.disabled = false; btn.textContent = 'Delete'; return;
           }
-          console.log('Preview file deleted successfully.');
-
-          // Step 3: Delete database record
           const { error: dbError } = await supabase.from('media').delete().eq('id', id);
           if (dbError) {
-            console.error('Failed to delete media record:', dbError);
             alert('Failed to delete media record: ' + dbError.message);
-            btn.disabled = false;
-            btn.textContent = 'Delete';
-            return;
+            btn.disabled = false; btn.textContent = 'Delete'; return;
           }
-          console.log('Media record deleted successfully.');
+          alert('✅ Media deleted successfully.');
           loadMedia();
         });
       });
     }
 
-    // Upload handler (unchanged but with logging)
+    // Load messages (Messages tab)
+    async function loadMessages() {
+      const { data, error } = await supabase
+        .from('support_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      const container = document.getElementById('messagesContainer');
+      if (error) {
+        container.innerHTML = '<p style="color:#e91e63;">Error loading messages.</p>';
+        return;
+      }
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color:#777; font-style:italic;">No messages yet.</p>';
+        return;
+      }
+
+      container.innerHTML = data.map(msg => `
+        <div class="media-item message-item">
+          <div class="message-header">
+            <strong>${msg.user_email || 'Anonymous'}</strong>
+            <small>${new Date(msg.created_at).toLocaleString()}</small>
+          </div>
+          ${msg.subject ? `<div class="message-subject">${msg.subject}</div>` : ''}
+          <div class="message-body">${msg.message}</div>
+        </div>
+      `).join('');
+    }
+
+    // Upload handler
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       const title = document.getElementById('title').value;
       const type = document.getElementById('type').value;
@@ -339,12 +447,10 @@
 
       try {
         const origPath = `${Date.now()}_original.${original.name.split('.').pop()}`;
-        console.log('Uploading original:', origPath);
         const { error: origErr } = await supabase.storage.from('originals').upload(origPath, original);
         if (origErr) throw origErr;
 
         const prevPath = `${Date.now()}_preview.${preview.name.split('.').pop()}`;
-        console.log('Uploading preview:', prevPath);
         const { error: prevErr } = await supabase.storage.from('previews').upload(prevPath, preview);
         if (prevErr) throw prevErr;
 
@@ -359,14 +465,14 @@
         document.getElementById('title').value = '';
         document.getElementById('originalFile').value = '';
         document.getElementById('previewFile').value = '';
+        // Reload media list in the background
         loadMedia();
       } catch (e) {
-        console.error('Upload error:', e);
         status.textContent = 'Error: ' + e.message;
       }
     });
 
-    // Support modal (identical to other pages)
+    // Support modal (same as other pages)
     const floatBtn = document.getElementById('supportFloatBtn');
     const overlay = document.getElementById('supportOverlay');
     const closeBtn = document.getElementById('closeSupportBtn');
@@ -382,41 +488,36 @@
     sendBtn.addEventListener('click', async () => {
       const msg = messageInput.value.trim();
       if (!msg) return alert('Please enter a message.');
-      sendBtn.disabled = true;
-      sendBtn.textContent = 'Sending…';
-      supportStatus.textContent = '';
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; supportStatus.textContent = '';
       try {
         const session = await supabase.auth.getSession();
         if (!session.data.session) {
           alert('You must be logged in.');
-          sendBtn.disabled = false;
-          sendBtn.textContent = 'Send Message';
+          sendBtn.disabled = false; sendBtn.textContent = 'Send Message';
           return;
         }
         const token = session.data.session.access_token;
         const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/support-message', {
           method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ subject: subjectInput.value.trim(), message: msg })
         });
         if (!res.ok) throw new Error('Failed');
         supportStatus.textContent = '✅ Message sent!';
-        subjectInput.value = '';
-        messageInput.value = '';
+        subjectInput.value = ''; messageInput.value = '';
         setTimeout(() => overlay.classList.remove('active'), 2000);
       } catch (e) {
         supportStatus.textContent = '❌ Error: ' + e.message;
       } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Message';
+        sendBtn.disabled = false; sendBtn.textContent = 'Send Message';
       }
     });
 
-    checkAdmin();
-    loadMedia();
+    // Initialize everything
+    checkAdmin().then(() => {
+      loadMedia();
+      loadMessages();
+    });
   </script>
 </body>
 </html>
