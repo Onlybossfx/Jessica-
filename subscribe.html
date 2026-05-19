@@ -84,6 +84,12 @@
       margin-top: 1.5rem;
       display: inline-block;
     }
+    #approx {
+      display: none;
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
   </style>
 </head>
 <body>
@@ -95,12 +101,14 @@
         <h3>Monthly</h3>
         <div class="price">$10</div>
         <div class="period">per month</div>
+        <div id="monthlyApprox" class="approx" style="display:none;"></div>
         <button class="btn-select" onclick="subscribe('monthly')">Choose Monthly</button>
       </div>
       <div class="plan-card" id="yearlyPlan">
         <h3>Yearly</h3>
         <div class="price">$100</div>
         <div class="period">per year</div>
+        <div id="yearlyApprox" class="approx" style="display:none;"></div>
         <button class="btn-select" onclick="subscribe('yearly')">Choose Yearly</button>
       </div>
     </div>
@@ -110,10 +118,45 @@
   </div>
 
   <script>
-    let currentPlan = '';
+    let userCurrency = 'USD';
+    let conversionRate = 1;
+    let approxDisplayed = false;
+
+    const countryToCurrency = {
+      NG: 'NGN', GH: 'GHS', KE: 'KES', ZA: 'ZAR', TZ: 'TZS',
+      UG: 'UGX', US: 'USD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
+      IT: 'EUR', ES: 'EUR', NL: 'EUR', BE: 'EUR', CA: 'CAD',
+    };
+
+    async function detectLocationAndRate() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        userCurrency = countryToCurrency[data.country] || data.currency || 'USD';
+      } catch {
+        const region = (navigator.language || '').split('-')[1] || 'US';
+        userCurrency = countryToCurrency[region] || 'USD';
+      }
+
+      if (userCurrency !== 'USD') {
+        try {
+          const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+          const rateData = await rateRes.json();
+          conversionRate = rateData.rates[userCurrency] || 1;
+        } catch { conversionRate = 1; }
+
+        // Show approximate local price on the cards
+        const monthlyLocal = (10 * conversionRate).toFixed(0);
+        const yearlyLocal = (100 * conversionRate).toFixed(0);
+        document.getElementById('monthlyApprox').style.display = 'block';
+        document.getElementById('monthlyApprox').textContent = `≈ ${monthlyLocal} ${userCurrency}`;
+        document.getElementById('yearlyApprox').style.display = 'block';
+        document.getElementById('yearlyApprox').textContent = `≈ ${yearlyLocal} ${userCurrency}`;
+        approxDisplayed = true;
+      }
+    }
 
     async function subscribe(plan) {
-      currentPlan = plan;
       const btn = document.querySelectorAll('.btn-select');
       btn.forEach(b => b.disabled = true);
       document.getElementById('status').textContent = 'Processing payment...';
@@ -121,21 +164,20 @@
       try {
         const session = await supabase.auth.getSession();
         const token = session.data.session.access_token;
-        // Create a unique tx_ref for this subscription
         const txRef = `SUB-${Date.now()}-${Math.random().toString(36).substr(2,9)}`;
-        const amount = plan === 'yearly' ? 100 : 10;
+        const amountUSD = plan === 'yearly' ? 100 : 10;
+        const localAmount = amountUSD * conversionRate; // If USD, conversionRate is 1
         const email = (await supabase.auth.getUser()).data.user?.email;
 
         FlutterwaveCheckout({
           public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X', // Replace with your key
           tx_ref: txRef,
-          amount: amount,
-          currency: 'USD',
+          amount: localAmount,
+          currency: userCurrency,           // <-- local currency (NGN, KES, etc.)
           payment_options: 'card,banktransfer',
           customer: { email: email },
           callback: async (response) => {
             document.getElementById('status').textContent = 'Verifying payment...';
-            // Call the subscribe-user edge function
             const res = await fetch('https://bxmxlbyxobtkyihiiyug.supabase.co/functions/v1/subscribe-user', {
               method: 'POST',
               headers: {
@@ -164,7 +206,8 @@
       }
     }
 
-    requireAuth(); // ensure logged in
+    requireAuth();
+    detectLocationAndRate();
   </script>
 </body>
 </html>
