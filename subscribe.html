@@ -170,7 +170,7 @@
         const email = (await supabase.auth.getUser()).data.user?.email;
 
         FlutterwaveCheckout({
-          public_key: 'FLWPUBK-4ca7ef88c315734165f76ea3c96752e7-X', // Replace with your key
+          public_key: 'FLWPUBK-16d89a4f62f0b67b6c70460ccd39dd48-X', // Replace with your key
           tx_ref: txRef,
           amount: localAmount,
           currency: userCurrency,           // <-- local currency (NGN, KES, etc.)
